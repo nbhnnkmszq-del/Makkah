@@ -1,1 +1,590 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>LAWZER VERSE - أول منصة تواصل للمطورين والمهندسين العكسيين</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* خلفية ثلاثية الأبعاد */
+        .universe-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(ellipse at center, #0a0a2a 0%, #000000 100%);
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* شريط علوي */
+        .glass-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid #d4af37;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #d4af37, #ffd700);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(212,175,55,0.4); }
+            50% { box-shadow: 0 0 30px rgba(212,175,55,0.8); }
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #d4af37, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* الحاوية */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 24px 40px;
+        }
+
+        /* الهيدر الأسطوري */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 60px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(212,175,55,0.2);
+        }
+
+        .hero h1 {
+            font-size: 64px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #d4af37, #ffd700, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #aaa;
+        }
+
+        /* منشورات */
+        .posts-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .post-card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 25px;
+            transition: all 0.3s;
+        }
+
+        .post-card:hover {
+            border-color: rgba(212,175,55,0.4);
+            transform: translateY(-3px);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .post-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #d4af37, #ffd700);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .post-author {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .post-badge {
+            background: rgba(212,175,55,0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: #d4af37;
+        }
+
+        .post-time {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .post-content {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 25px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .post-stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .post-stat:hover { color: #d4af37; }
+
+        /* إنشاء منشور */
+        .create-post {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+
+        .create-post textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        .create-post textarea:focus {
+            border-color: #d4af37;
+            outline: none;
+        }
+
+        .post-btn {
+            background: linear-gradient(135deg, #d4af37, #ffd700);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* إحصائيات */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 20px 35px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 900;
+            color: #d4af37;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* قائمة المستخدمين */
+        .users-sidebar {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .users-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #d4af37;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #d4af37, #ffd700);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-badge {
+            font-size: 10px;
+            color: #d4af37;
+        }
+
+        /* قناة التليجرام */
+        .telegram-section {
+            background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(0,0,0,0.8));
+            border-radius: 48px;
+            padding: 40px;
+            text-align: center;
+            border: 1px solid rgba(212,175,55,0.3);
+            margin-top: 30px;
+        }
+
+        .telegram-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #d4af37, #ffd700);
+            padding: 15px 35px;
+            border-radius: 50px;
+            color: #000;
+            font-size: 18px;
+            font-weight: 700;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .telegram-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(212,175,55,0.5);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 36px; }
+            .container { padding: 90px 16px 30px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="universe-bg"></div>
+<div class="stars" id="stars"></div>
+
+<header class="glass-header">
+    <div class="logo">
+        <div class="logo-icon"><i class="fas fa-globe"></i></div>
+        <div class="logo-text">LAWZER VERSE</div>
+    </div>
+    <div style="display: flex; gap: 20px;">
+        <a href="https://t.me/ROOT_SNAPWAZZER" target="_blank" style="color: #d4af37;"><i class="fab fa-telegram"></i></a>
+        <i class="fas fa-bell" style="color: #d4af37; cursor: pointer;"></i>
+    </div>
+</header>
+
+<div class="container">
+    <div class="hero">
+        <h1>🌍 LAWZER VERSE 🌍</h1>
+        <p>أول منصة تواصل اجتماعي للمطورين والمهندسين العكسيين في العالم العربي</p>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-number" id="memberCount">10K+</div>
+            <div class="stat-label">عضو نشط</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="postCount">5K+</div>
+            <div class="stat-label">منشور</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="tweakCount">500+</div>
+            <div class="stat-label">تواك تم مشاركته</div>
+        </div>
+    </div>
+
+    <div class="create-post">
+        <textarea id="postContent" rows="3" placeholder="ماذا تريد مشاركته مع مجتمع LAWZER؟ شارك تواكك، سؤالك، أو إنجازك..."></textarea>
+        <button class="post-btn" onclick="createPost()"><i class="fas fa-paper-plane"></i> نشر</button>
+    </div>
+
+    <div class="posts-feed" id="postsFeed">
+        <!-- المنشورات تظهر هنا -->
+    </div>
+
+    <div class="users-sidebar">
+        <div class="users-title"><i class="fas fa-users"></i> أبرز الأعضاء</div>
+        <div id="usersList"></div>
+    </div>
+
+    <div class="telegram-section">
+        <div style="font-size: 28px; margin-bottom: 10px;">🚀</div>
+        <div style="font-size: 22px; font-weight: 700;">انضم إلى ثورة LAWZER</div>
+        <p style="margin: 15px 0;">كن جزءاً من أكبر مجتمع للمطورين والمهندسين العكسيين</p>
+        <a href="https://t.me/ROOT_SNAPWAZZER" target="_blank" class="telegram-btn">
+            <i class="fab fa-telegram"></i> انضم إلى قناة LAWZER
+        </a>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>© 2026 LAWZER - جميع الحقوق محفوظة | أول منصة تواصل للمطورين والمهندسين العكسيين</p>
+</footer>
+
+<script>
+    // إنشاء نجوم
+    function createStars() {
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 300; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 5 + 's';
+            star.style.animationDuration = Math.random() * 3 + 2 + 's';
+            starsContainer.appendChild(star);
+        }
+    }
+
+    // بيانات تجريبية
+    let posts = [
+        {
+            id: 1,
+            author: 'LAWZER',
+            avatar: '⚡',
+            badge: 'المؤسس',
+            time: 'منذ 5 دقائق',
+            content: 'مرحباً بكم في LAWZER VERSE! أول منصة تواصل اجتماعي للمطورين والمهندسين العكسيين في العالم العربي. شاركوا تواكاتكم، استفساراتكم، وإنجازاتكم هنا! 🚀',
+            likes: 128,
+            comments: 45,
+            shares: 23
+        },
+        {
+            id: 2,
+            author: 'RE_Wizard',
+            avatar: '🔓',
+            badge: 'مهندس عكسي محترف',
+            time: 'منذ ساعة',
+            content: 'تمكنت من فك تشفير TikTok v33.6 بالكامل! سأشارك الطريقة قريباً في القناة. من يريد النسخة المفكوكة؟',
+            likes: 89,
+            comments: 34,
+            shares: 12
+        },
+        {
+            id: 3,
+            author: 'TweakMaster',
+            avatar: '⚙️',
+            badge: 'مطور تواكات',
+            time: 'منذ ساعتين',
+            content: 'أصدرت تواك جديد لـ Instagram يضيف ميزة تحميل الـ Reels بدون علامة مائية! الرابط في التعليقات.',
+            likes: 234,
+            comments: 67,
+            shares: 45
+        }
+    ];
+
+    let users = [
+        { name: 'LAWZER', avatar: '⚡', badge: 'المؤسس' },
+        { name: 'RE_Wizard', avatar: '🔓', badge: 'مهندس عكسي' },
+        { name: 'TweakMaster', avatar: '⚙️', badge: 'مطور تواكات' },
+        { name: 'IOS_Hacker', avatar: '🍎', badge: 'خبير iOS' },
+        { name: 'Frida_Expert', avatar: '💉', badge: 'خبير Frida' }
+    ];
+
+    function renderPosts() {
+        const feed = document.getElementById('postsFeed');
+        feed.innerHTML = posts.map(post => `
+            <div class="post-card">
+                <div class="post-header">
+                    <div class="post-avatar">${post.avatar}</div>
+                    <div>
+                        <div class="post-author">${post.author} <span class="post-badge">${post.badge}</span></div>
+                        <div class="post-time">${post.time}</div>
+                    </div>
+                </div>
+                <div class="post-content">${post.content}</div>
+                <div class="post-stats">
+                    <div class="post-stat" onclick="likePost(${post.id})"><i class="far fa-heart"></i> ${post.likes}</div>
+                    <div class="post-stat"><i class="far fa-comment"></i> ${post.comments}</div>
+                    <div class="post-stat"><i class="far fa-share-square"></i> ${post.shares}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderUsers() {
+        const usersList = document.getElementById('usersList');
+        usersList.innerHTML = users.map(user => `
+            <div class="user-item">
+                <div class="user-avatar">${user.avatar}</div>
+                <div>
+                    <div class="user-name">${user.name}</div>
+                    <div class="user-badge">${user.badge}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function createPost() {
+        const content = document.getElementById('postContent').value.trim();
+        if (!content) return;
+
+        const newPost = {
+            id: posts.length + 1,
+            author: 'أنت',
+            avatar: '👤',
+            badge: 'عضو جديد',
+            time: 'الآن',
+            content: content,
+            likes: 0,
+            comments: 0,
+            shares: 0
+        };
+
+        posts.unshift(newPost);
+        renderPosts();
+        document.getElementById('postContent').value = '';
+        updatePostCount();
+    }
+
+    function likePost(id) {
+        const post = posts.find(p => p.id === id);
+        if (post) {
+            post.likes++;
+            renderPosts();
+        }
+    }
+
+    function updatePostCount() {
+        document.getElementById('postCount').innerText = posts.length + '+';
+    }
+
+    // إحصائيات متحركة
+    let members = 10000;
+    setInterval(() => {
+        members += Math.floor(Math.random() * 5);
+        document.getElementById('memberCount').innerText = members.toLocaleString() + '+';
+    }, 10000);
+
+    createStars();
+    renderPosts();
+    renderUsers();
+    updatePostCount();
+</script>
+
+</body>
+</html>
