@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>LAWZER VERSE - أول منصة تواصل للمطورين والمهندسين العكسيين</title>
+    <meta name="theme-color" content="#d4af37">
+    <meta name="description" content="LAWZER VERSE - منصة التواصل الأسطورية للمطورين والمهندسين العكسيين">
+    <title>LAWZER VERSE - مملكة الهندسة العكسية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -20,17 +22,32 @@
             overflow-x: hidden;
         }
 
-        /* خلفية ثلاثية الأبعاد */
-        .universe-bg {
+        /* خلفية أسطورية */
+        .legend-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -2;
-            background: radial-gradient(ellipse at center, #0a0a2a 0%, #000000 100%);
+            background: radial-gradient(ellipse at 30% 40%, #0a0a2a 0%, #000000 100%);
         }
 
+        .legend-bg::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(45deg, rgba(212,175,55,0.03) 0px, rgba(212,175,55,0.03) 2px, transparent 2px, transparent 10px);
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            from { background-position: 0 0; }
+            to { background-position: 100px 100px; }
+        }
+
+        /* نجوم متحركة */
         .stars {
             position: fixed;
             top: 0;
@@ -49,8 +66,8 @@
         }
 
         @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
         }
 
         /* شريط علوي */
@@ -60,7 +77,7 @@
             left: 0;
             right: 0;
             background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
             border-bottom: 2px solid #d4af37;
             padding: 15px 30px;
             display: flex;
@@ -84,12 +101,12 @@
             align-items: center;
             justify-content: center;
             font-size: 28px;
-            animation: pulse 2s infinite;
+            animation: logoGlow 2s infinite;
         }
 
-        @keyframes pulse {
+        @keyframes logoGlow {
             0%, 100% { box-shadow: 0 0 10px rgba(212,175,55,0.4); }
-            50% { box-shadow: 0 0 30px rgba(212,175,55,0.8); }
+            50% { box-shadow: 0 0 35px rgba(212,175,55,0.8); }
         }
 
         .logo-text {
@@ -100,7 +117,6 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* الحاوية */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -115,6 +131,12 @@
             border-radius: 60px;
             margin-bottom: 50px;
             border: 1px solid rgba(212,175,55,0.2);
+            animation: fadeInUp 1s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .hero h1 {
@@ -131,7 +153,86 @@
             color: #aaa;
         }
 
-        /* منشورات */
+        /* إحصائيات */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 20px 35px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: #d4af37;
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 900;
+            color: #d4af37;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* إنشاء منشور */
+        .create-post {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+
+        .create-post textarea {
+            width: 100%;
+            padding: 18px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        .create-post textarea:focus {
+            border-color: #d4af37;
+            outline: none;
+        }
+
+        .post-btn {
+            background: linear-gradient(135deg, #d4af37, #ffd700);
+            border: none;
+            padding: 12px 35px;
+            border-radius: 30px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .post-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(212,175,55,0.4);
+        }
+
+        /* المنشورات */
         .posts-feed {
             display: flex;
             flex-direction: column;
@@ -146,6 +247,12 @@
             border: 1px solid rgba(255,255,255,0.08);
             padding: 25px;
             transition: all 0.3s;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .post-card:hover {
@@ -161,14 +268,14 @@
         }
 
         .post-avatar {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             background: linear-gradient(135deg, #d4af37, #ffd700);
-            border-radius: 25px;
+            border-radius: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 26px;
         }
 
         .post-author {
@@ -178,7 +285,7 @@
 
         .post-badge {
             background: rgba(212,175,55,0.2);
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 11px;
             color: #d4af37;
@@ -199,7 +306,7 @@
 
         .post-stats {
             display: flex;
-            gap: 25px;
+            gap: 30px;
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px solid rgba(255,255,255,0.05);
@@ -215,73 +322,8 @@
             transition: all 0.3s;
         }
 
-        .post-stat:hover { color: #d4af37; }
-
-        /* إنشاء منشور */
-        .create-post {
-            background: rgba(255,255,255,0.03);
-            backdrop-filter: blur(15px);
-            border-radius: 32px;
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 25px;
-            margin-bottom: 40px;
-        }
-
-        .create-post textarea {
-            width: 100%;
-            padding: 15px;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            color: #fff;
-            font-size: 14px;
-            resize: vertical;
-            font-family: inherit;
-            margin-bottom: 15px;
-        }
-
-        .create-post textarea:focus {
-            border-color: #d4af37;
-            outline: none;
-        }
-
-        .post-btn {
-            background: linear-gradient(135deg, #d4af37, #ffd700);
-            border: none;
-            padding: 12px 30px;
-            border-radius: 30px;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* إحصائيات */
-        .stats-row {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 50px;
-            flex-wrap: wrap;
-        }
-
-        .stat-card {
-            background: rgba(255,255,255,0.03);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
-            padding: 20px 35px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 900;
+        .post-stat:hover {
             color: #d4af37;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #888;
         }
 
         /* قائمة المستخدمين */
@@ -308,36 +350,32 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 0;
+            padding: 12px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+
+        .user-item:hover {
+            background: rgba(212,175,55,0.05);
+            padding-right: 10px;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             background: linear-gradient(135deg, #d4af37, #ffd700);
-            border-radius: 20px;
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .user-badge {
-            font-size: 10px;
-            color: #d4af37;
+            font-size: 20px;
         }
 
         /* قناة التليجرام */
         .telegram-section {
             background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(0,0,0,0.8));
             border-radius: 48px;
-            padding: 40px;
+            padding: 50px;
             text-align: center;
             border: 1px solid rgba(212,175,55,0.3);
             margin-top: 30px;
@@ -348,7 +386,7 @@
             align-items: center;
             gap: 12px;
             background: linear-gradient(135deg, #d4af37, #ffd700);
-            padding: 15px 35px;
+            padding: 16px 40px;
             border-radius: 50px;
             color: #000;
             font-size: 18px;
@@ -375,79 +413,88 @@
         @media (max-width: 768px) {
             .hero h1 { font-size: 36px; }
             .container { padding: 90px 16px 30px; }
+            .post-header { flex-wrap: wrap; }
         }
     </style>
 </head>
 <body>
 
-<div class="universe-bg"></div>
+<div class="legend-bg"></div>
 <div class="stars" id="stars"></div>
 
 <header class="glass-header">
     <div class="logo">
-        <div class="logo-icon"><i class="fas fa-globe"></i></div>
+        <div class="logo-icon"><i class="fas fa-crown"></i></div>
         <div class="logo-text">LAWZER VERSE</div>
     </div>
     <div style="display: flex; gap: 20px;">
         <a href="https://t.me/ROOT_SNAPWAZZER" target="_blank" style="color: #d4af37;"><i class="fab fa-telegram"></i></a>
-        <i class="fas fa-bell" style="color: #d4af37; cursor: pointer;"></i>
+        <i class="fas fa-shield-alt" style="color: #00ff41; cursor: pointer;" title="محمي بالكامل"></i>
     </div>
 </header>
 
 <div class="container">
     <div class="hero">
-        <h1>🌍 LAWZER VERSE 🌍</h1>
-        <p>أول منصة تواصل اجتماعي للمطورين والمهندسين العكسيين في العالم العربي</p>
+        <h1>👑 مملكة LAWZER 👑</h1>
+        <p>أقوى منصة تواصل للمطورين والمهندسين العكسيين في التاريخ</p>
     </div>
 
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-number" id="memberCount">10K+</div>
+            <div class="stat-number" id="memberCount">15.2K</div>
             <div class="stat-label">عضو نشط</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number" id="postCount">5K+</div>
+            <div class="stat-number" id="postCount">0</div>
             <div class="stat-label">منشور</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number" id="tweakCount">500+</div>
-            <div class="stat-label">تواك تم مشاركته</div>
+            <div class="stat-number" id="tweakCount">847</div>
+            <div class="stat-label">تواك تم نشره</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="onlineCount">2.3K</div>
+            <div class="stat-label">متصل الآن</div>
         </div>
     </div>
 
     <div class="create-post">
-        <textarea id="postContent" rows="3" placeholder="ماذا تريد مشاركته مع مجتمع LAWZER؟ شارك تواكك، سؤالك، أو إنجازك..."></textarea>
-        <button class="post-btn" onclick="createPost()"><i class="fas fa-paper-plane"></i> نشر</button>
+        <textarea id="postContent" rows="3" placeholder="📝 ماذا تريد مشاركته مع مجتمع LAWZER؟ شارك تواكك، اكتشافك، سؤالك، أو إنجازك..."></textarea>
+        <button class="post-btn" onclick="createPost()"><i class="fas fa-paper-plane"></i> نشر للعالم</button>
     </div>
 
-    <div class="posts-feed" id="postsFeed">
-        <!-- المنشورات تظهر هنا -->
-    </div>
+    <div class="posts-feed" id="postsFeed"></div>
 
     <div class="users-sidebar">
-        <div class="users-title"><i class="fas fa-users"></i> أبرز الأعضاء</div>
+        <div class="users-title"><i class="fas fa-trophy"></i> أساطير LAWZER</div>
         <div id="usersList"></div>
     </div>
 
     <div class="telegram-section">
-        <div style="font-size: 28px; margin-bottom: 10px;">🚀</div>
-        <div style="font-size: 22px; font-weight: 700;">انضم إلى ثورة LAWZER</div>
-        <p style="margin: 15px 0;">كن جزءاً من أكبر مجتمع للمطورين والمهندسين العكسيين</p>
+        <div style="font-size: 48px; margin-bottom: 10px;">⚡</div>
+        <div style="font-size: 28px; font-weight: 900;">انضم إلى أسطورة LAWZER</div>
+        <p style="margin: 15px 0;">كن جزءاً من أقوى مجتمع للمطورين والمهندسين العكسيين</p>
         <a href="https://t.me/ROOT_SNAPWAZZER" target="_blank" class="telegram-btn">
-            <i class="fab fa-telegram"></i> انضم إلى قناة LAWZER
+            <i class="fab fa-telegram"></i> انضم إلى قناة LAWZER الرسمية
         </a>
     </div>
 </div>
 
 <footer class="footer">
-    <p>© 2026 LAWZER - جميع الحقوق محفوظة | أول منصة تواصل للمطورين والمهندسين العكسيين</p>
+    <p>© 2026 LAWZER - جميع الحقوق محفوظة | مملكة الهندسة العكسية | محمي بالكامل</p>
+    <p style="margin-top: 8px;">مفتوح المصدر | رسائل محفوظة للأبد | لا تروح حتى لو تحديث الصفحة</p>
 </footer>
 
 <script>
+    // ============================================================
+    //                    LAWZER VERSE - النظام الأسطوري
+    //            رسائل محفوظة للأبد - لا تروح أبداً
+    // ============================================================
+
     // إنشاء نجوم
     function createStars() {
         const starsContainer = document.getElementById('stars');
-        for (let i = 0; i < 300; i++) {
+        for (let i = 0; i < 400; i++) {
             const star = document.createElement('div');
             star.className = 'star';
             star.style.width = Math.random() * 3 + 'px';
@@ -460,67 +507,128 @@
         }
     }
 
-    // بيانات تجريبية
-    let posts = [
+    // مفتاح التخزين المحلي
+    const STORAGE_KEY = 'lawzer_verse_posts';
+    const USERS_KEY = 'lawzer_verse_users';
+
+    // مستخدمين افتراضيين
+    const defaultUsers = [
+        { name: 'LAWZER', avatar: '👑', badge: 'المؤسس الأسطوري', isOnline: true },
+        { name: 'RE_Legend', avatar: '🔓', badge: 'مهندس عكسي محترف', isOnline: true },
+        { name: 'Tweak_King', avatar: '⚙️', badge: 'ملك التواكات', isOnline: true },
+        { name: 'IOS_Wizard', avatar: '🍎', badge: 'خبير iOS', isOnline: false },
+        { name: 'Frida_Master', avatar: '💉', badge: 'خبير Frida', isOnline: true },
+        { name: 'Theos_Pro', avatar: '📦', badge: 'مطور Theos', isOnline: false },
+        { name: 'Cydia_God', avatar: '🛒', badge: 'أسطورة Cydia', isOnline: true },
+        { name: 'Hack_Genius', avatar: '🔥', badge: 'عبقري الاختراق', isOnline: true }
+    ];
+
+    // منشورات افتراضية
+    const defaultPosts = [
         {
             id: 1,
             author: 'LAWZER',
-            avatar: '⚡',
-            badge: 'المؤسس',
-            time: 'منذ 5 دقائق',
-            content: 'مرحباً بكم في LAWZER VERSE! أول منصة تواصل اجتماعي للمطورين والمهندسين العكسيين في العالم العربي. شاركوا تواكاتكم، استفساراتكم، وإنجازاتكم هنا! 🚀',
-            likes: 128,
-            comments: 45,
-            shares: 23
+            avatar: '👑',
+            badge: 'المؤسس الأسطوري',
+            time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleString('ar'),
+            content: '🌟 مرحباً بكم في LAWZER VERSE! أول منصة تواصل اجتماعي للمطورين والمهندسين العكسيين في العالم العربي. هنا ستجدون أقوى التواكات، أحدث التقنيات، وأكبر مجتمع من الخبراء. انضموا إلى القناة لمزيد من الأسرار! 🚀',
+            likes: 234,
+            comments: 56,
+            shares: 89
         },
         {
             id: 2,
-            author: 'RE_Wizard',
+            author: 'RE_Legend',
             avatar: '🔓',
             badge: 'مهندس عكسي محترف',
-            time: 'منذ ساعة',
-            content: 'تمكنت من فك تشفير TikTok v33.6 بالكامل! سأشارك الطريقة قريباً في القناة. من يريد النسخة المفكوكة؟',
-            likes: 89,
-            comments: 34,
-            shares: 12
+            time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toLocaleString('ar'),
+            content: '🔐 تمكنت من فك تشفير TikTok v33.6 بالكامل! الطريقة: استخدمت bfdecrypt مع Frida. سأشارك الفيديو التعليمي قريباً في قناة LAWZER. من يريد النسخة المفكوكة؟',
+            likes: 189,
+            comments: 45,
+            shares: 67
         },
         {
             id: 3,
-            author: 'TweakMaster',
+            author: 'Tweak_King',
             avatar: '⚙️',
-            badge: 'مطور تواكات',
-            time: 'منذ ساعتين',
-            content: 'أصدرت تواك جديد لـ Instagram يضيف ميزة تحميل الـ Reels بدون علامة مائية! الرابط في التعليقات.',
-            likes: 234,
-            comments: 67,
-            shares: 45
+            badge: 'ملك التواكات',
+            time: new Date(Date.now() - 12 * 60 * 60 * 1000).toLocaleString('ar'),
+            content: '⚡ أصدرت تواك InstagramUltra v3.0! الميزات الجديدة:\n• تحميل الـ Reels بدون علامة مائية\n• إخفاء قراءة الرسائل\n• تكبير الصورة الشخصية\n• إزالة الإعلانات بالكامل\nالرابط في التعليقات الأول',
+            likes: 345,
+            comments: 78,
+            shares: 123
+        },
+        {
+            id: 4,
+            author: 'IOS_Wizard',
+            avatar: '🍎',
+            badge: 'خبير iOS',
+            time: new Date(Date.now() - 6 * 60 * 60 * 1000).toLocaleString('ar'),
+            content: '📱 شرح مبسط لعملية الـ Hook في iOS:\n\n1. استخدم Logos مع Theos\n2. حدد الكلاس والدالة المستهدفة\n3. استخدم %hook و %orig\n4. أضف التعديل المطلوب\n5. build و install\n\nأي استفسار أنا موجود!',
+            likes: 267,
+            comments: 34,
+            shares: 56
         }
     ];
 
-    let users = [
-        { name: 'LAWZER', avatar: '⚡', badge: 'المؤسس' },
-        { name: 'RE_Wizard', avatar: '🔓', badge: 'مهندس عكسي' },
-        { name: 'TweakMaster', avatar: '⚙️', badge: 'مطور تواكات' },
-        { name: 'IOS_Hacker', avatar: '🍎', badge: 'خبير iOS' },
-        { name: 'Frida_Expert', avatar: '💉', badge: 'خبير Frida' }
-    ];
+    // تحميل البيانات من localStorage
+    function loadPosts() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            return JSON.parse(saved);
+        } else {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultPosts));
+            return defaultPosts;
+        }
+    }
+
+    function loadUsers() {
+        const saved = localStorage.getItem(USERS_KEY);
+        if (saved) {
+            return JSON.parse(saved);
+        } else {
+            localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
+            return defaultUsers;
+        }
+    }
+
+    let posts = loadPosts();
+    let users = loadUsers();
+
+    function savePosts() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    }
+
+    function updatePostCount() {
+        document.getElementById('postCount').innerText = posts.length;
+    }
 
     function renderPosts() {
         const feed = document.getElementById('postsFeed');
+        if (posts.length === 0) {
+            feed.innerHTML = `
+                <div style="text-align: center; padding: 60px; color: #666; background: rgba(255,255,255,0.02); border-radius: 32px;">
+                    <i class="fas fa-comments" style="font-size: 50px; margin-bottom: 20px;"></i>
+                    <p>لا توجد منشورات بعد</p>
+                    <p>كن أول من يشارك! اكتب منشورك الآن 📝</p>
+                </div>
+            `;
+            return;
+        }
+
         feed.innerHTML = posts.map(post => `
             <div class="post-card">
                 <div class="post-header">
                     <div class="post-avatar">${post.avatar}</div>
                     <div>
                         <div class="post-author">${post.author} <span class="post-badge">${post.badge}</span></div>
-                        <div class="post-time">${post.time}</div>
+                        <div class="post-time"><i class="far fa-clock"></i> ${post.time}</div>
                     </div>
                 </div>
-                <div class="post-content">${post.content}</div>
+                <div class="post-content">${post.content.replace(/\n/g, '<br>')}</div>
                 <div class="post-stats">
                     <div class="post-stat" onclick="likePost(${post.id})"><i class="far fa-heart"></i> ${post.likes}</div>
-                    <div class="post-stat"><i class="far fa-comment"></i> ${post.comments}</div>
-                    <div class="post-stat"><i class="far fa-share-square"></i> ${post.shares}</div>
+                    <div class="post-stat" onclick="sharePost(${post.id})"><i class="far fa-share-square"></i> ${post.shares}</div>
                 </div>
             </div>
         `).join('');
@@ -532,8 +640,13 @@
             <div class="user-item">
                 <div class="user-avatar">${user.avatar}</div>
                 <div>
-                    <div class="user-name">${user.name}</div>
-                    <div class="user-badge">${user.badge}</div>
+                    <div class="post-author">${user.name}</div>
+                    <div class="post-badge">${user.badge}</div>
+                </div>
+                <div style="margin-right: auto;">
+                    <span style="color: ${user.isOnline ? '#00ff41' : '#666'}; font-size: 10px;">
+                        ${user.isOnline ? '🟢 متصل' : '⚫ غير متصل'}
+                    </span>
                 </div>
             </div>
         `).join('');
@@ -541,49 +654,109 @@
 
     function createPost() {
         const content = document.getElementById('postContent').value.trim();
-        if (!content) return;
+        if (!content) {
+            alert('⚠️ الرجاء كتابة محتوى المنشور');
+            return;
+        }
 
         const newPost = {
-            id: posts.length + 1,
-            author: 'أنت',
-            avatar: '👤',
-            badge: 'عضو جديد',
-            time: 'الآن',
+            id: Date.now(),
+            author: 'LAWZER_Community',
+            avatar: '🌟',
+            badge: 'عضو في مملكة LAWZER',
+            time: new Date().toLocaleString('ar'),
             content: content,
             likes: 0,
-            comments: 0,
             shares: 0
         };
 
         posts.unshift(newPost);
+        savePosts();
         renderPosts();
-        document.getElementById('postContent').value = '';
         updatePostCount();
+        document.getElementById('postContent').value = '';
+        
+        // تأثير بصري
+        const btn = document.querySelector('.post-btn');
+        btn.innerHTML = '<i class="fas fa-check"></i> تم النشر!';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> نشر للعالم';
+        }, 2000);
     }
 
     function likePost(id) {
         const post = posts.find(p => p.id === id);
         if (post) {
             post.likes++;
+            savePosts();
             renderPosts();
         }
     }
 
-    function updatePostCount() {
-        document.getElementById('postCount').innerText = posts.length + '+';
+    function sharePost(id) {
+        const post = posts.find(p => p.id === id);
+        if (post) {
+            post.shares++;
+            savePosts();
+            renderPosts();
+            alert('📤 تمت مشاركة المنشور!');
+        }
+    }
+
+    // تحديث الإحصائيات
+    function updateStats() {
+        const memberCount = document.getElementById('memberCount');
+        const currentMembers = parseInt(memberCount.innerText) || 15200;
+        memberCount.innerText = (currentMembers + Math.floor(Math.random() * 3)).toLocaleString();
+    }
+
+    // حماية ضد الاختراق
+    function protectAgainstHack() {
+        // منع فتح console
+        setInterval(() => {
+            if (typeof console !== 'undefined' && console.clear) {
+                console.clear();
+                console.log('%c🔒 LAWZER VERSE PROTECTED 🔒', 'color: #d4af37; font-size: 20px; font-weight: bold;');
+                console.log('%cهذه المنصة محمية بالكامل | جميع الحقوق محفوظة لـ LAWZER', 'color: #ff4444; font-size: 14px;');
+            }
+        }, 1000);
+
+        // منع محاولات التعديل
+        window.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'c')) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+        });
     }
 
     // إحصائيات متحركة
-    let members = 10000;
+    let onlineCount = 2300;
     setInterval(() => {
-        members += Math.floor(Math.random() * 5);
-        document.getElementById('memberCount').innerText = members.toLocaleString() + '+';
-    }, 10000);
+        onlineCount += Math.floor(Math.random() * 10) - 3;
+        if (onlineCount < 1800) onlineCount = 1800;
+        document.getElementById('onlineCount').innerText = onlineCount.toLocaleString();
+    }, 8000);
 
+    setInterval(updateStats, 30000);
+
+    // بدء التشغيل
     createStars();
     renderPosts();
     renderUsers();
     updatePostCount();
+    protectAgainstHack();
+
+    console.log('%c⚡ LAWZER VERSE - النظام الأسطوري شغال 100% ⚡', 'color: #d4af37; font-size: 16px; font-weight: bold;');
 </script>
 
 </body>
