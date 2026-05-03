@@ -2,48 +2,31 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <!-- المفتاح السحري لسحب البيانات -->
     <key>PayloadContent</key>
-    <array>
-        <dict>
-            <key>PayloadDescription</key>
-            <string>جلب معلومات الجهاز لتفعيل LWZ STORE</string>
-            <key>PayloadDisplayName</key>
-            <string>🔐 LWZ UDID Capture</string>
-            <key>PayloadIdentifier</key>
-            <string>com.lwz.udid.capture</string>
-            <key>PayloadType</key>
-            <string>com.apple.security.scep</string>
-            <key>PayloadUUID</key>
-            <string>ABC-123-DEF-456-GHI-789</string>
-            <key>PayloadVersion</key>
-            <integer>1</integer>
-            <key>Challenge</key>
-            <string>LWZ_ELITE_2024</string>
-            <key>URL</key>
-            <string>https://akis.infinityfreeapp.com/receive.php</string>
-            <key>DeviceAttributes</key>
-            <array>
-                <string>UDID</string>
-                <string>VERSION</string>
-                <string>PRODUCT</string>
-                <string>DEVICE_NAME</string>
-            </array>
-        </dict>
-    </array>
-    <key>PayloadDescription</key>
-    <string>تفعيل اشتراك LWZ STORE VIP - فك حظر الأجهزة وتفعيل المتجر</string>
-    <key>PayloadDisplayName</key>
-    <string>⚜️ LWZ VIP Activation ⚜️</string>
-    <key>PayloadIdentifier</key>
-    <string>com.link.lezo.0.lwz.vip</string>
+    <dict>
+        <key>URL</key>
+        <string>https://akis.infinityfreeapp.com/receive.php</string>
+        <key>DeviceAttributes</key>
+        <array>
+            <string>UDID</string>
+            <string>VERSION</string>
+            <string>PRODUCT</string>
+            <string>DEVICE_NAME</string>
+        </array>
+    </dict>
     <key>PayloadOrganization</key>
-    <string>LWZ Elite Store</string>
-    <key>PayloadRemovalDisallowed</key>
-    <false/>
-    <key>PayloadType</key>
-    <string>Configuration</string>
+    <string>LWZ Elite Development</string>
+    <key>PayloadDisplayName</key>
+    <string>⚜️ LWZ VIP Verification ⚜️</string>
+    <key>PayloadDescription</key>
+    <string>تحقق نظام LWZ لفك حظر الأجهزة وتفعيل المتجر</string>
+    <key>PayloadIdentifier</key>
+    <string>com.link.lezo.0.mobileconfig</string>
     <key>PayloadUUID</key>
-    <string>LWZ-VIP-2024-001-ABC-DEF</string>
+    <string>98765432-ABCD-EFGH-IJKL-123456789012</string>
+    <key>PayloadType</key>
+    <string>Profile Service</string>
     <key>PayloadVersion</key>
     <integer>1</integer>
     <key>ConsentText</key>
@@ -53,12 +36,11 @@
 
 سيتم تفعيل اشتراكك فوراً في متجر LWZ STORE
 
-✨ المميزات:
 ✅ جميع التطبيقات البلس
 ✅ التوقيع السحابي مجاناً
-✅ دعم فني VIP 24/7
+✅ دعم فني VIP
 
-اضغط "تثبيت" للمتابعة</string>
+اضغط تثبيت للمتابعة</string>
     </dict>
 </dict>
 </plist>
