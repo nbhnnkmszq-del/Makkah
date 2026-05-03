@@ -5,7 +5,6 @@
     <key>PayloadContent</key>
     <dict>
         <key>URL</key>
-        <!-- الرابط اللي بيستلم الـ UDID من الجوال -->
         <string>https://akis.infinityfreeapp.com/receive.php</string> 
         <key>DeviceAttributes</key>
         <array>
@@ -16,7 +15,7 @@
         </array>
     </dict>
     <key>PayloadOrganization</key>
-    <string>LWZ Store Elite</string>
+    <string>LWZ Store Elite (com.link.lezo.0)</string>
     <key>PayloadType</key>
     <string>Profile Service</string>
     <key>PayloadUUID</key>
@@ -24,10 +23,10 @@
     <key>PayloadVersion</key>
     <integer>1</integer>
     <key>PayloadIdentifier</key>
-    <string>com.lwz.udid.profile</string>
+    <string>com.link.lezo.0.udid</string>
     <key>PayloadDescription</key>
-    <string>هذا الملف يقوم بسحب UDID جهازك لتفعيل متجر LWZ بنجاح.</string>
+    <string>🔐 نظام التحقق الآمن لمتجر LWZ - مطلوب لتفعيل الشهادات والخدمات الحصرية.</string>
     <key>PayloadDisplayName</key>
-    <string>LWZ UDID Service</string>
+    <string>LWZ VIP Verification</string>
 </dict>
 </plist>
