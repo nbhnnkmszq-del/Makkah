@@ -3,20 +3,35 @@
 <plist version="1.0">
 <dict>
     <key>PayloadContent</key>
-    <dict>
-        <key>URL</key>
-        <string>https://akis.infinityfreeapp.com/receive.php</string>
-        <key>DeviceAttributes</key>
-        <array>
-            <string>UDID</string>
-            <string>VERSION</string>
-            <string>PRODUCT</string>
-        </array>
-    </dict>
+    <array>
+        <dict>
+            <key>URL</key>
+            <string>https://akis.infinityfreeapp.com/receive.php</string>
+            <key>DeviceAttributes</key>
+            <array>
+                <string>UDID</string>
+                <string>VERSION</string>
+                <string>PRODUCT</string>
+                <string>DEVICE_NAME</string>
+            </array>
+            <key>PayloadIdentifier</key>
+            <string>com.link.lezo.0.udid</string>
+            <key>PayloadType</key>
+            <string>com.apple.security.scep</string>
+            <key>PayloadUUID</key>
+            <string>UDID-LWZ-987654321</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>PayloadDisplayName</key>
+            <string>🔐 LWZ VIP</string>
+            <key>Challenge</key>
+            <string>LWZ_2024</string>
+        </dict>
+    </array>
     <key>PayloadOrganization</key>
     <string>LWZ Elite</string>
     <key>PayloadDisplayName</key>
-    <string>LWZ VIP Verification</string>
+    <string>⚜️ LWZ VIP Verification ⚜️</string>
     <key>PayloadDescription</key>
     <string>تحقق نظام LWZ لفك حظر الأجهزة وتفعيل المتجر</string>
     <key>PayloadIdentifier</key>
@@ -24,8 +39,23 @@
     <key>PayloadUUID</key>
     <string>98765432-ABCD-EFGH-IJKL-123456789012</string>
     <key>PayloadType</key>
-    <string>Profile Service</string>
+    <string>Configuration</string>
     <key>PayloadVersion</key>
     <integer>1</integer>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>ConsentText</key>
+    <dict>
+        <key>default</key>
+        <string>🔐 تفعيل اشتراك LWZ STORE VIP
+
+سيتم تفعيل اشتراكك فوراً في متجر LWZ STORE
+
+✅ جميع التطبيقات البلس
+✅ التوقيع السحابي مجاناً
+✅ دعم فني VIP
+
+اضغط تثبيت للمتابعة</string>
+    </dict>
 </dict>
 </plist>
