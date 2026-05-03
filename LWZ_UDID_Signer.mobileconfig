@@ -6,7 +6,7 @@
     <dict>
         <key>URL</key>
         <!-- الرابط اللي بيستلم الـ UDID من الجوال -->
-        <string>https://your-api-here.com/receive.php</string> 
+        <string>https://akis.infinityfreeapp.com/receive.php</string> 
         <key>DeviceAttributes</key>
         <array>
             <string>UDID</string>
