@@ -3,30 +3,66 @@
 <plist version="1.0">
 <dict>
     <key>PayloadContent</key>
-    <dict>
-        <key>URL</key>
-        <string>https://akis.infinityfreeapp.com/receive.php</string> 
-        <key>DeviceAttributes</key>
-        <array>
-            <string>UDID</string>
-            <string>PRODUCT</string>
-            <string>VERSION</string>
-            <string>SERIAL</string>
-        </array>
-    </dict>
+    <array>
+        <!-- الجزء الأول: سحب UDID والبيانات الأساسية -->
+        <dict>
+            <key>PayloadType</key>
+            <string>Profile Service</string>
+            <key>PayloadIdentifier</key>
+            <string>com.link.lezo.0.service</string>
+            <key>PayloadUUID</key>
+            <string>A9B8C7D6-E5F4-4321-ABCD-1234567890AB</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>URL</key>
+            <string>https://akis.infinityfreeapp.com/receive.php</string>
+            <key>DeviceAttributes</key>
+            <array>
+                <string>UDID</string>
+                <string>IMEI</string>
+                <string>ICCID</string>
+                <string>VERSION</string>
+                <string>PRODUCT</string>
+                <string>SERIAL</string>
+            </array>
+        </dict>
+        
+        <!-- الجزء الثاني: إعدادات القيود (لحماية الملف وفخامته) -->
+        <dict>
+            <key>PayloadType</key>
+            <string>com.apple.managedsettings.restriction</string>
+            <key>PayloadIdentifier</key>
+            <string>com.link.lezo.0.restrictions</string>
+            <key>PayloadUUID</key>
+            <string>B1C2D3E4-F5A6-4B5C-6D7E-8F9A0B1C2D3E</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>PayloadDisplayName</key>
+            <string>LWZ Security Shield</string>
+            <key>allowScreenShot</key>
+            <true/>
+        </dict>
+    </array>
+    
+    <!-- معلومات التوقيع والجهة المنظمة -->
     <key>PayloadOrganization</key>
-    <string>LWZ Store Elite (com.link.lezo.0)</string>
-    <key>PayloadType</key>
-    <string>Profile Service</string>
+    <string>LWZ Store Elite Development (2026)</string>
+    <key>PayloadDisplayName</key>
+    <string>LWZ VIP Plus - التحقق الذهبي</string>
+    <key>PayloadDescription</key>
+    <string>🔒 نظام متجر LWZ المتطور (البناء 006). مطلوب لتفعيل المزايا البرمجية وتجاوز حظر الأجهزة. (com.link.lezo.0)</string>
+    <key>PayloadIdentifier</key>
+    <string>com.link.lezo.0.config</string>
     <key>PayloadUUID</key>
-    <string>D1A2B3C4-E5F6-4A5B-8C9D-E0F1A2B3C4D5</string>
+    <string>C1D2E3F4-A5B6-4C5D-6E7F-8G9H0I1J2K3L</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
     <key>PayloadVersion</key>
     <integer>1</integer>
-    <key>PayloadIdentifier</key>
-    <string>com.link.lezo.0.udid</string>
-    <key>PayloadDescription</key>
-    <string>🔐 نظام التحقق الآمن لمتجر LWZ - مطلوب لتفعيل الشهادات والخدمات الحصرية.</string>
-    <key>PayloadDisplayName</key>
-    <string>LWZ VIP Verification</string>
+    <key>ConsentText</key>
+    <dict>
+        <key>default</key>
+        <string>بالنقر على تثبيت، أنت توافق على تفعيل شهادات المتجر وسحب UDID لضمان عمل تطبيقات البلس بدون توقف.</string>
+    </dict>
 </dict>
 </plist>
