@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE AppleComputer PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <dict>
+        <key>URL</key>
+        <!-- الرابط اللي بيستلم الـ UDID من الجوال -->
+        <string>https://your-api-here.com/receive.php</string> 
+        <key>DeviceAttributes</key>
+        <array>
+            <string>UDID</string>
+            <string>PRODUCT</string>
+            <string>VERSION</string>
+            <string>SERIAL</string>
+        </array>
+    </dict>
+    <key>PayloadOrganization</key>
+    <string>LWZ Store Elite</string>
+    <key>PayloadType</key>
+    <string>Profile Service</string>
+    <key>PayloadUUID</key>
+    <string>D1A2B3C4-E5F6-4A5B-8C9D-E0F1A2B3C4D5</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadIdentifier</key>
+    <string>com.lwz.udid.profile</string>
+    <key>PayloadDescription</key>
+    <string>هذا الملف يقوم بسحب UDID جهازك لتفعيل متجر LWZ بنجاح.</string>
+    <key>PayloadDisplayName</key>
+    <string>LWZ UDID Service</string>
+</dict>
+</plist>
