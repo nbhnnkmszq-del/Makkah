@@ -3,31 +3,25 @@ import requests
 
 app = Flask(__name__)
 
-# المسار الذي يرسل له السناب طلباته
+# هذا المسار يطابق تماماً ما يرسله تطبيق السناب
 @app.route('/proxy_login', methods=['POST'])
-def handle_snap_login():
-    # الرابط المستهدف الحقيقي
-    target_url = "https://app.snapchat.com/loq/login"
-    
-    # نقل الهيدرات مع تعديل الـ Host
-    headers = {k: v for k, v in request.headers if k.lower() != 'host'}
-    headers['Host'] = 'app.snapchat.com'
-    
+def proxy_login():
     try:
+        # إرسال الطلب للسناب الأصلي
         resp = requests.post(
-            target_url,
+            "https://app.snapchat.com/loq/login",
             data=request.get_data(),
-            headers=headers,
+            headers={k: v for k, v in request.headers if k.lower() != 'host'},
             verify=False
         )
         return Response(resp.content, status=resp.status_code, headers=dict(resp.headers))
     except Exception as e:
         return str(e), 500
 
-# مسار إضافي ليتجنب الـ 404 عند فحص السيرفر
-@app.route('/', methods=['GET'])
-def home():
-    return "Proxy is running", 200
+# مسار لجعل السيرفر يظهر كـ "Active"
+@app.route('/', methods=['GET', 'HEAD'])
+def index():
+    return "Proxy Active", 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    app.run()
