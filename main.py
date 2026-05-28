@@ -4,35 +4,47 @@ import uuid
 import warnings
 from urllib3.exceptions import InsecureRequestWarning
 
+# إخفاء تحذيرات HTTPS
 warnings.simplefilter('ignore', InsecureRequestWarning)
 app = Flask(__name__)
 
-TARGET_BASE_URL = "https://app.snapchat.com"
+# هذا المسار الذي يطلبه السناب بالضبط
+@app.route('/proxy_login', methods=['POST', 'GET', 'OPTIONS'])
+def proxy_handler():
+    # 1. السناب يحتاج التأكد أن السيرفر شغال (Handshake)
+    if request.method == 'OPTIONS':
+        return '', 200
 
-@app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def catch_all(path):
-    # بناء الرابط الأصلي
-    target_url = f"{TARGET_BASE_URL}/{path}"
+    # 2. توجيه الطلب الأساسي للسناب
+    target_url = "https://app.snapchat.com/api/loq/login"
     
-    # تنظيف الهيدرات وتجهيز الهوية الجديدة
-    headers = {k: v for k, v in request.headers.items() if k.lower() not in ['host', 'x-forwarded-for']}
-    headers['X-Snapchat-Device-ID'] = str(uuid.uuid4()) # فك الحظر اللحظي
-    headers['User-Agent'] = 'Snapchat/12.80.0 (iPhone14,2; iOS 15.5; scale=3.00)'
+    # 3. تجهيز الهيدرات "الموهومة"
+    headers = {
+        'User-Agent': 'Snapchat/12.80.0 (iPhone14,2; iOS 15.5; scale=3.00)',
+        'X-Snapchat-App-Version': '12.80.0',
+        'X-Snapchat-Device-ID': str(uuid.uuid4()), # تغيير الهوية لفك الحظر
+        'Content-Type': 'application/x-protobuf',  # السناب يستخدم البروتوف
+    }
     
     try:
-        # إرسال الطلب للسناب
-        resp = requests.request(
-            method=request.method,
-            url=target_url,
+        # تنفيذ الطلب
+        resp = requests.post(
+            target_url,
             headers=headers,
             data=request.get_data(),
-            params=request.args,
             verify=False,
-            timeout=15
+            timeout=10
         )
+        
+        # إرجاع الرد
         return Response(resp.content, resp.status_code, resp.headers.items())
     except Exception as e:
-        return str(e), 502
+        return f"Proxy Error: {str(e)}", 502
+
+# مسار إضافي للتأكد أن الرابط "شغال" (Health Check)
+@app.route('/', methods=['GET'])
+def health():
+    return "Makkah Proxy is ACTIVE and RUNNING", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
