@@ -1,46 +1,59 @@
 from flask import Flask, request, Response
 import requests
+import uuid
+import time
 
 app = Flask(__name__)
 
-# 1. لا تستخدم هيدرات عامة، استخدم هيدرات حقيقية من "جهاز نظيف"
-# التوقيع (Signature) هو مفتاح اللعبة
-SPOOF_HEADERS = {
-    'User-Agent': 'Snapchat/13.20.0 (iPhone14,2; iOS 16.0; scale=3.00)',
-    'X-Snapchat-Client-Auth': 'TOKEN_FROM_CLEAN_DEVICE', # لازم تجيبه من جهاز غير محظور
-    'X-Snap-Device-ID': 'GENERATE_A_NEW_UUID', # غيره في كل طلب
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Connection': 'keep-alive'
-}
+# إعدادات ثابتة تحاكي إصداراً قديماً
+TARGET_BASE_URL = "https://app.snapchat.com"
+APP_VERSION = "12.80.0" 
 
-@app.route('/proxy_login', methods=['POST'])
+def generate_spoof_headers(original_headers):
+    """توليد هيدرات ديناميكية لكل طلب"""
+    new_headers = {
+        'User-Agent': f'Snapchat/{APP_VERSION} (iPhone14,2; iOS 15.5; scale=3.00)',
+        'X-Snapchat-App-Version': APP_VERSION,
+        'X-Snapchat-Device-ID': str(uuid.uuid4()), # هوية جديدة لكل طلب لتجاوز الحظر
+        'X-Snapchat-Client-Auth': original_headers.get('X-Snapchat-Client-Auth', ''),
+        'X-Snapchat-Device-Model': 'iPhone14,2',
+        'X-Snapchat-Platform': 'iOS',
+        'Accept-Language': 'en-US,en;q=0.9',
+    }
+    return new_headers
+
+@app.route('/proxy_login', methods=['POST', 'GET'])
 def proxy():
-    # عنوان سيرفر سناب الأصلي (يجب أن يكون ثابتاً للسناب)
-    target_url = "https://app.snapchat.com/..." 
+    # 1. استخراج المسار المطلوب من الهيدر (الذي أرسلناه من التويك)
+    original_path = request.headers.get('X-Original-URL', '/api/loq/login')
+    target_url = f"{TARGET_BASE_URL}{original_path}"
 
-    # 2. تنظيف الهيدرز من آثار الفلاسك (تجنب كشف البروكسي)
-    headers = {k: v for k, v in request.headers if k.lower() not in ['host', 'x-original-url', 'x-forwarded-for']}
-    headers.update(SPOOF_HEADERS)
+    # 2. توليد هيدرات نظيفة
+    headers = generate_spoof_headers(request.headers)
 
-    # 3. تعديل الـ Payload (إذا كنت تحتاج لتغيير اليوزر/الباس)
+    # 3. تعديل الـ Payload (إذا كان الطلب يحتوي على بيانات جهاز قديم)
     data = request.get_data()
 
     try:
-        resp = requests.post(
-            target_url,
+        # إرسال الطلب للسناب
+        resp = requests.request(
+            method=request.method,
+            url=target_url,
             headers=headers,
             data=data,
-            verify=False, # عشان يتخطى شهادات السيرفر
-            timeout=15
+            verify=False,
+            timeout=10
         )
         
-        # 4. فلترة الهيدرز المرجعة عشان ما يكتشف التويك أنك ببروكسي
-        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        # 4. إرجاع الرد للسناب مع تنظيف الهيدرز
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection', 'x-frame-options']
         headers_to_return = {k: v for k, v in resp.headers.items() if k.lower() not in excluded_headers}
         
         return Response(resp.content, resp.status_code, headers_to_return)
+        
     except Exception as e:
-        return str(e), 502
+        return f"Proxy Error: {str(e)}", 502
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    # تشغيل السيرفر بأداء عالي
+    app.run(host='0.0.0.0', port=10000, threaded=True)
