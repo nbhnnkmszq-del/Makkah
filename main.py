@@ -1,30 +1,35 @@
 from flask import Flask, request, Response
 import requests
 import uuid
+import warnings
+from urllib3.exceptions import InsecureRequestWarning
 
+warnings.simplefilter('ignore', InsecureRequestWarning)
 app = Flask(__name__)
 
-# المحرك: إجبار السناب على رؤية السيرفر كجهاز iPhone 14 جديد دائماً
-def forge_headers(headers):
-    spoofed = {k: v for k, v in headers.items() if k.lower() not in ['host', 'x-snap-signature']}
-    spoofed['User-Agent'] = 'Snapchat/12.80.0 (iPhone14,2; iOS 15.5; scale=3.00)'
-    spoofed['X-Snapchat-Device-ID'] = str(uuid.uuid4()) # تغيير هوية الجهاز فوراً
-    spoofed['X-Snapchat-Client-Auth'] = headers.get('X-Snapchat-Client-Auth', '')
-    return spoofed
+TARGET_BASE_URL = "https://app.snapchat.com"
 
-@app.route('/proxy_login', methods=['POST'])
-def proxy():
-    # توجيه الطلب الأصلي للسناب
-    target_url = "https://app.snapchat.com" + request.headers.get('X-Original-URL', '/api/loq/login')
+@app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def catch_all(path):
+    # بناء الرابط الأصلي
+    target_url = f"{TARGET_BASE_URL}/{path}"
     
-    # تحويل الطلب ببيانات "موهومة" (Spoofed)
-    headers = forge_headers(request.headers)
+    # تنظيف الهيدرات وتجهيز الهوية الجديدة
+    headers = {k: v for k, v in request.headers.items() if k.lower() not in ['host', 'x-forwarded-for']}
+    headers['X-Snapchat-Device-ID'] = str(uuid.uuid4()) # فك الحظر اللحظي
+    headers['User-Agent'] = 'Snapchat/12.80.0 (iPhone14,2; iOS 15.5; scale=3.00)'
     
     try:
-        # إرسال الطلب بدون الاعتماد على توقيع الجهاز المحظور
-        resp = requests.post(target_url, headers=headers, data=request.get_data(), verify=False)
-        
-        # إرجاع الرد للسناب كأنه طبيعي
+        # إرسال الطلب للسناب
+        resp = requests.request(
+            method=request.method,
+            url=target_url,
+            headers=headers,
+            data=request.get_data(),
+            params=request.args,
+            verify=False,
+            timeout=15
+        )
         return Response(resp.content, resp.status_code, resp.headers.items())
     except Exception as e:
         return str(e), 502
