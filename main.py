@@ -1,48 +1,52 @@
 from flask import Flask, request, Response
 import requests
-import urllib3
-import logging
+import os
 
-# تعطيل تحذيرات SSL لأن السناب يستخدم شهادات معقدة
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 app = Flask(__name__)
 
-# إعداد الـ Logger عشان نشوف الردود في لوحة تحكم Render
-logging.basicConfig(level=logging.INFO)
+# هذا الرابط هو المعيار الجديد للـ login
+TARGET_URL = "https://app.snapchat.com/loq/login"
 
 @app.route('/proxy_login', methods=['POST'])
 def proxy_login():
     try:
-        # 1. الرد الفوري: نجهز الطلب للسناب الأصلي
-        target_url = "https://app.snapchat.com/loq/login"
+        # 1. فلترة الهيدرات الضرورية فقط
+        # السناب حساس جداً لترتيب الهيدرات
+        excluded_headers = ['host', 'accept-encoding', 'content-length', 'connection']
+        headers = {k: v for k, v in request.headers if k.lower() not in excluded_headers}
         
-        # 2. تنظيف الهيدرات (هذه الخطوة تمنع تعليق السناب)
-        headers = {k: v for k, v in request.headers if k.lower() not in ['host', 'accept-encoding', 'content-length']}
+        # 2. حقن هيدرات "نظيفة" لإيهام السناب أن الطلب أصلي
         headers['Host'] = 'app.snapchat.com'
+        headers['User-Agent'] = 'Snapchat/12.45.0.35 (iPhone13,4; iOS 16.5; Scale/3.00)'
+        headers['X-Snapchat-Client-Auth'] = request.headers.get('X-Snapchat-Client-Auth', '')
+
+        # 3. تمرير الـ Data كما هي (لأنها مشفرة محلياً)
+        raw_data = request.get_data()
         
-        # 3. إرسال الطلب للسناب الحقيقي
         resp = requests.post(
-            target_url,
-            data=request.get_data(),
+            TARGET_URL,
+            data=raw_data,
             headers=headers,
             verify=False,
-            timeout=10 # لا تترك الطلب معلقاً أكثر من 10 ثوانٍ
+            timeout=15
         )
         
-        # 4. الرد على التويك: نرسل له الـ Response الحقيقي من السناب
+        # 4. الرد بـ Header يخدع السناب أنه الرد الأصلي
+        excluded_resp_headers = ['content-encoding', 'transfer-encoding']
+        resp_headers = {k: v for k, v in resp.headers.items() if k.lower() not in excluded_resp_headers}
+        resp_headers['Content-Type'] = 'application/x-protobuf'
+
         return Response(
-            resp.content, 
-            status=resp.status_code, 
-            headers={'Content-Type': 'application/x-protobuf'} # السناب يتوقع دائماً ردود بروتوفب
+            resp.content,
+            status=resp.status_code,
+            headers=resp_headers
         )
-        
+
     except Exception as e:
-        logging.error(f"Error in proxy: {str(e)}")
-        # رد 200 وهمي في حال فشل السيرفر عشان التويك ما يكرش السناب
-        return Response(status=200)
+        print(f"Error: {e}")
+        # هنا الحيلة: نرجع كود 200 مع بودي فارغ (أو محاكي للنجاح)
+        # هذا يمنع التطبيق من رمي رسالة الخطأ للمستخدم
+        return Response(b'', status=200)
 
 if __name__ == '__main__':
-    import os
-    # استخدام البورت المخصص لـ Render
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
