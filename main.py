@@ -1,43 +1,44 @@
 from flask import Flask, request, Response
 import requests
-import uuid
-import random
 
 app = Flask(__name__)
 
-# قائمة يوزرات وهمية (User-Agents) للتنويع
-USER_AGENTS = [
-    "Snapchat/12.80.0.35 (iPhone14,2; iOS 16.5; Scale/3.00)",
-    "Snapchat/12.70.0.22 (iPhone13,4; iOS 15.6; Scale/3.00)",
-    "Snapchat/12.85.0.10 (iPhone15,3; iOS 17.0; Scale/3.00)"
-]
+# هذا الرابط هو الأصل لكل طلبات السناب
+SNAP_BASE_URL = "https://app.snapchat.com"
 
-@app.route('/proxy_login', methods=['POST'])
-def proxy_login():
-    # 1. توليد بصمة جهاز جديدة
-    new_device_id = str(uuid.uuid4())
+@app.route('/<path:subpath>', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+def proxy_handler(subpath):
+    # 1. بناء الرابط الأصلي الذي يحاول السناب الوصول إليه
+    target_url = f"{SNAP_BASE_URL}/{subpath}"
     
-    # 2. تنظيف وتجهيز الهيدرات
-    headers = {
-        'User-Agent': random.choice(USER_AGENTS),
-        'X-Snapchat-Device-ID': new_device_id,
-        'Content-Type': 'application/x-protobuf',
-        'Accept': '*/*'
-    }
+    # 2. تنظيف الهيدرات (إزالة الـ Host الخاص بسيرفرنا وتزويد هيدرات نظيفة)
+    headers = {k: v for k, v in request.headers if k.lower() not in ['host', 'accept-encoding']}
+    headers['Host'] = 'app.snapchat.com'
+    headers['User-Agent'] = 'Snapchat/12.80.0.35 (iPhone14,2; iOS 16.5; Scale/3.00)'
     
-    # 3. إرسال الطلب للسناب الأصلي
-    target_url = "https://app.snapchat.com/loq/login"
-    
+    # 3. إرسال الطلب (مهما كان نوعه GET أو POST)
     try:
-        resp = requests.post(
-            target_url,
+        resp = requests.request(
+            method=request.method,
+            url=target_url,
             data=request.get_data(),
             headers=headers,
-            verify=False
+            params=request.args,
+            verify=False,
+            timeout=10
         )
-        return Response(resp.content, status=resp.status_code, headers=dict(resp.headers))
+        
+        # 4. إعادة الرد للسناب مع تنظيف هيدرات السيرفر الأصلي
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        headers_to_return = {k: v for k, v in resp.headers.items() if k.lower() not in excluded_headers}
+        
+        return Response(resp.content, status=resp.status_code, headers=headers_to_return)
+        
     except Exception as e:
         return str(e), 500
 
 if __name__ == '__main__':
-    app.run(port=8080)
+    # Railway يستخدم متغير البيئة PORT، إذا لم يوجد استخدم 8080
+    import os
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
