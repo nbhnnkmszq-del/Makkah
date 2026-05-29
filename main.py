@@ -1,25 +1,34 @@
 from flask import Flask, request, Response
 import requests
+import urllib3
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 app = Flask(__name__)
 
-@app.route('/proxy_login', methods=['POST'])
+@app.route('/proxy_login', methods=['GET', 'POST'])
 def proxy_login():
-    # هذا الكود هو اللي بيستقبل الطلب من التويك ويمرره للسناب
+    # 1. وجه الطلب للسناب
     target_url = "https://app.snapchat.com/loq/login"
     
+    # 2. فلترة الهيدرات (حذف الهيدرات اللي تسبب مشاكل)
+    headers = {k: v for k, v in request.headers if k.lower() not in ['host', 'accept-encoding', 'content-length']}
+    headers['Host'] = 'app.snapchat.com'
+    
+    # 3. إرسال الطلب
     try:
-        # إرسال الطلب للسناب الأصلي
-        resp = requests.post(
-            target_url, 
-            data=request.get_data(), 
-            headers={k: v for k, v in request.headers if k.lower() != 'host'},
+        resp = requests.request(
+            method=request.method,
+            url=target_url,
+            data=request.get_data(),
+            headers=headers,
             verify=False
         )
-        # إرجاع رد السناب للتويك
         return Response(resp.content, status=resp.status_code, headers=dict(resp.headers))
     except Exception as e:
         return str(e), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000) # تأكد أن البورت هو 10000 في Render
+    # Render يعطيك البورت من متغير البيئة PORT
+    import os
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
