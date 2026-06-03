@@ -1,4 +1,5 @@
 flask
 requests
+blackboxprotobuf
 gunicorn
 urllib3
