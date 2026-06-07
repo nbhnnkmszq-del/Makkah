@@ -1,62 +1,36 @@
 from flask import Flask, request, jsonify
-import base64
-import blackboxprotobuf
 import requests
-import struct
+import base64
 
 app = Flask(__name__)
 
-# هذا هو الـ payload الأصلي (ثابت لا يتغير)
-RAW_DATA = "Cgd1c2VyMjExIglBQUAxMjMxMjM6ggQKIIDjVORcYpKWieuHuwepuCr+h7/PXE1vp/mq3N0d1lwVCiD1XFNkJaCNx8fZg7qLN7d6NCISgk63ZZjsf/Tur6+9yQogjSHzfu7mciEXOZCyh3+RSfoSE6LUT2aQxj/h+amf2fkKIFeIXbx497lhtA5AzD0J3s0SzgHuQW4IVwGsMJ2TD5N9CiBtWEe3BHWN5fqLcs3ZGe+HCuWv4gSQQx3+HejUMASn6gogZ3LX9xFtE/gbcVXf5zWLRi5VlWERnvuUy2OnhbHr8n4KIEJgmQ3hRbQDgotwoVEO6xCBQbirV2cDdOPVCgyzAdK+CiDrjxbcsxKyrDaoCjfYy6h2TWRnovzsbGmIrkBKVdq0ogogI2ZN4Ta8eL/r2aKzfZ9wegxA/JjdBA54eUw4GnltWCwKIJUrJmdz3NNSdAvtPdmVc5N9WeqO83DUY6fE5O+JYwhSCiAFwwTJY68Zh2126i1gE4OTO4+KtyxEQuvHm/yVbKGZARKJAQpBBCUswD9dMf8ScnCyb658GJZmEvSFPFdBZ8vJ1GM0YL1aB5veddZNSkhew+7XQWSSOC3aANVHAaxG8QJwzXOUhWkSIOuPFtyzErKsNqgKN9jLqHZNZGei/OxsaYiuQEpV2rSiGiAxPSGZ+Uy2kiIaNMXNXmwPfjXwJ80ODUPwFVjEf5ZiSiAKQh0SGHd6aUh2YnFMWHZNek1LTWhpQ0FvdkE9PRiCAkgBerkjCiRCNzFEMDA0RC04QTI2LTQyRUYtOTUwMC02MDEzQjU3MDQ5NEISJDdBREFGODRELTkwQkItNEFGOS04OTU2LTQ1RkY2QzRFRUZBMRokQzBCRDJDRjMtNEIwNC00QjQ5LTk3QTItNTJDNjVBRTk4QTNGKiQyRjMwMTg2MS1FRjRFLTRDMTItQThEMS1CMEY3NUVEOEE2RkEyJDNFRUY5QjA3LTJFQzgtNDE1RS1CRUIxLTZGMkZGNEE3QkVDRjrLBQrIBa3NSLy4M5u4mwGU2ZUBseKRAr+ZmAHg76QB4e+kAez4e9ff1wOkyPYCmcTzAbS7M7C9M9TZiwGg1eYBoMeLAebhrQGviEjw+twB0ZqgAZ7DSay/M4yFkgHu3oACsL8z9Z+9AZLQwwHIxMEB6f+kAarspAGfp8gBl5awAcfAhwLE6+ACjaefAtfkW9eIb9iIb6W9+QGq3LIBwMcz5O6UAcfHM+OINLThjQGfsaAB9KaFAvbHM8G8a7qN/wGnlU/B/4ICydmPAaqssQOojfcB4oKaAuiCmgK8gTqx7ucB5s1J9M0z+80zw440yMRRjqmUAcONpgGW9osC77l2rqyxA6+ssQOAr7EDxeth65Rxq9Az2s8z3M8z388z488z1MObAfzRM/3RM+nyuAGG0jOZ4ZoBgb2qAYG2lwG/2oEBn9gz7Ldl65KPA7XWqQG92DPE2DOiw0m/idUBwrxr2MtTgdkz2dKMAoKHogHLwsUB5vRdgeNdqNkz67yvAffZM/uLiAH82TOin4UB04HhAYesjwGBtVjB8HL+2TOA2jP1mHfn4a0B6cbQAeGs6gH02qoBm8dr0PdqhLVYtbmbAeOEgwLDgeMBiKfPAeuN5wHrt2W93kf897kDyeatAZfGc67Ec6HhhALb2UfI4VPI5q0B49m+A/3TR/OBlAGtuKECtdVy2NFVufBRq9e3Aa3gM8XhM8bhM9jTjgH+mZ0Bh99HtPEz/d1JlPBH9vQzrPUz2LqUAcf4M6+e7QHP6ZAB0OmQAdq1WJ2sa9fdgAGWr36cr36dr36L5YkBlsGCA4K7M/66M/GGNIW7M9L9ggKGlowC2sgz/7maA4C6mgP52MoCupT1AbmU9QGo1tYB/LOzAv2zgQKPyTPk+YYCmYudAa/7dt7esgGrmYsB8LqNAoXVUcrFbp6jdvPuXfzuhgL8mtIBy4viAYvYhQJSSApGMDAwMDE6RXZlUlV3WkJSUDZoc2ZteDQvVjhaK2c0THlLalNsUWhlNUdmY2VvM3VlN2g4bmNRcmZTLzQ2RDh6Nkw3MGM4MVr1AwoJFQ3x+MwIDEACEsQB2d9ND+wJLJzdgvbXkpWGD0df3LXBXyqviBUnDPV1qEGT5MZMBooH87tAB80V2MvfAUptHNuWV2m25bfuGTkPJJd68mwEta7ngc58J65YhDhYlx/GVP/OTqTKeSGTQdyHQj4to7kd0OZZRgoOL3zKZcMHPyDXjLhF5YHTxQZDtZTqlY4fDg8pPq00tKnlAMQCZVPidEpQ351sDopkE+pOf19czKXSkFAPoEAxqe/nqxSdR7kCfU8ysWpYHUq4G4snJxwNdTKgAt/Tt9YSsSRe+drZo/IgOhpU4aS8R/uWxzx8ZJT5sW/DAdSzdVPuzwu3+L2TfHXHYp+h42sdg+7ranUUgVXpGdtUGZRK0QCxi/MPaj3nKEiZgwQ9G0++keSJoJL/v0IWcBT9gJ3/751XtvnJNsqpzSoDNZ1/IVl4aCmrYPxU3FBam/31gv3vF5j62nelNOvonoOL5++u0FY0gLJ+bseddpuzRxWi+ttES7VEmg4KOEU9khG8gTM7/yWedxzdn/jC43vpamKROOnpB4433T6F6CC5BaVzfOgD9kF+n6YL/6SLyhFqVzZkraGJRdET8r0NJC7izCMTc9T3UPUMa+wi9uMyNb9rpm28Y73S765izFduQEJ+N2366Kq70xkfhtUVg2LoF0FnQUFBTDhZaVJQK281VTUwcVdvNHYxdXozSUVVTmswK21lODl2TGZ2NVppbmdweU9Pa2dYWFh5alB6WVR6V21XU3UrQllxY0Q0N2J5aXJMWisrM2RKY2NwRjk5aFdwcFQ3RzV4QXVVK3k1NldwU1lzQVEwS1RvK2Y2ZzZ3cmhqTTgvOXRpQ09pdGVYMFdtODdocUNxNnd4L2tlUE5sNHRyTlpkTUdSOFlCQ0l2VjU1MmhiNWEvVldVb1hGYjN0Wm1uTjliWWh4VkFnQUFKMDUxNjEvdHBZV3RlcjVxeDJhU3lvVXFyMklnT3hnOEEzZzMyYVBKMGRwV3U0L1puZWVUQUEwWG9POWlzSVlFYkF3SEZSWUFvYjRPRVJ6N2tRTDNxNTMwWWplVkhFU1crS3V6S0p3blVXLyt6QWpuY056QndhZi9lMHpiRW1ONTd0MDRlbStESW4wSnlyKzdJVEZDcGovR2hWQmNnUmhhZnZ6ZGFCUGJVdUg5cHE5UjgrOGhBOUYrYmtDczh1T3V4Zkc4SzJsY3E2VXVHYTZFY3RHSmZpOG1FYVhHWnczbEtaQkFJV0dRdVBIU2VJbVBmeThZcDZtVUxJTEo2dXA3bGVjT2JsVlZPbi9CcHV4bTFtdEE1bVRuemtMTmJqc1lsYXhqSVZaQmxJN0xITGk4S1dYMEh4Z0JFbmJGMzV0TVRYYUNrNHhicUdYN3RJeWtIM2pKR3NycStibEhsTWFnWGhTTlppUTFYMTl5MU45Q0p2YktHNHhVYUp2ajZKM1ZHbjBZZGpvemRKNHI2dEtmSUpNVjZ0QmwzWnc2QVF3V3N2SGE5RWthYmM2S0RLRGU3UGlEQnhrYUhENFRtSGhQSkZUMkl5RGdwQkJHTlRSREtyWkROTUx6c2Ewa1pvK1lhZWd0YW1DcVQzSVVMYlRod25zRWxjV1JUOTl0djl0RGt0bUJZaS9hS3ZGTmJiVUdPSkRvVzc1S3RxdzQ4cXdubHg0cjlHZk05V1cxSDRmRkhvK2RibnlCMVhqTS8wbzlDeEtaYmlmaDRwYmRyUFZDYll6Nm1TczVrSXVuR2dXVksxYVlTSVA0bkFQek1mSkpQSTJxQmpseWprVm5kRG4yckhOa0poVkxHMmhFbHFHTlkyOW56RWlPZCtHV2k5R25FVDc1UUtLN1RKRTRndDVKVHJvWVJuWlpNbU1icnBicE9aN0dhY0lNVGhuOTV1Zmx1YTZORGJiZEJvby9ia1BUQmlrMDUrRDdNUzhFak0zR3hEQUFzYTdTVHlrQXZMZUMzdmUvMm5WYkJGNjZZYm5XcU5NM1QvV0xzQ2VVVStFZERlWmx3Z2pGaVRZcllsWTVadG93Tytyb3dvN0tnblQ1RXYvaWZra0p1SWpLV21OVXkrWVV0cVBTbXJYS2JwQlRkekNPYmVyWkJRblBMSXAzZnlOb3REZjBWNEkrTGFNKy9wVXg2NWdDL0R0N05lbWsveU9kNWdlTHhMZ2ZBL1ZldjJ0TURicmJPZytRZVdaTHg2ZllnVjY5Q0R2YVEyUTBsUXNVNkNYQ29FOExGZTRyQW1hcGQxeVVtczE1TGJsYThSTVlaVllGWUFDTFZERVkrNG5WWnlWYWZ4NkJNOE9aRWpQa3VuSkIvbVpxeStWa3EzZTRtMUJlM2hTL1l2azNoWFZQTldxUzRrcW9qUXV4S0o5YkJjYkRueFdOZ1ZxNkxwNWpUd1lDWGZRN2ZYTTlVbjFWaTJ4T0pZNEFVdkdJY2hKRGlpWjRCVkQ4RURSSXNhL1kzNkVFK0wxcnQ0aDN6bDh2WGxMTUV3Qk5FdDBVNW9zc2daOGkvWWpSa0VQdVhVcnFYVFdVVlRTNmtSWm1qeFBOOGR0akRJbzlPOTZYcmJ1WVBMaFkvRy93YjE5ZnQxSDl5dEt5NUtlcFVmcGF6b3U1bVh3dGFnTXNqTFFPRm5vTm1Va29VS3J1UFZwdkhLUTd4MGtiSHV2R1A4Mk5sUVpnWExmM2JNdU82cU51OXFsMGtsL3ZubDdOYXVqL1RNbDlvQ0kyWEMrVHlGVTg0S0ZsU0I0d1ZDQjJmdUNsNmFrYy9RSDZrZlBEb0c0UjZNZEtObm52SlJUdjZHQXgyaWxlZWFVR0ZnU2t1Ym9yUmJGK2NjWFRBQWlrWndNWUlxT0lWSFk3OUxsaVNOU3VsaGN1Uk4zZUFaWExzaWl0Q1FTQ0IxeUdxazQ5NXZ1MFRXUGFrelAxTVlKZk5uSWdVSUcwZFk1TEJQWmxub0NJa2Q0RVkwVStpdHlzYVZ0dTkyeU1DUEcrcEh3V1VMVDBHdTFoZFdsdnhQLytuTkpyNFB1L0FIUXB2WHBDRXJKVWZSVzJadkNScDIwUVBaZmNnd2FyQkV2bmt6bXBvbUpxOVlNc2xUeTk4T2VVdkczbElpMU9Cc04vUi9tRVNuTkFBV1RZemhnSlJzcVExOTFzS2pVS1FjcmFrTmErWWdSVHpqUno1RjkxZno4dnNvV2pMRHhFc0ZiemUrbVVIZlVueXQ5THFxZ0p2cVdEWll6TzRNRXp5RkF3RkdBcFBqTmprOStXZ1R1R0tpaEhWWjJQeEpZbjZSQW5za1N6Y290TnBtODVVTzc1U3RTNHNVUkFKbEdqVnVmcElreHMrRGdrd25nM29DYmpwWVNDb0VEK1RlOC9CV1lEUjFaVGhBN1o4MW91enBianppN3Faa3FKV2ZiZmsrbkljcXBZUUk0dytuZ2tyVU93YnpPM0JkSFBWMDZrVHlhRWxGRU5jOUNpTXlYWXB4WlE1dmtlZFF4SFVSNUJVRVZJSFA1djRRemdpVzhNUXQyQkdDVW5VbFZuYUdPYWFLYklpcDBpa3RlOVBvRWs4dm53YllNRHVmNUNiUnpPUDM5Tnh2dWR4a0tvdm9wR3BGSWJSWVZuaGxKTlA0ZUlUd29DVjR6MmlMbi8xaHlBeXVyQXRwR2F5WGVncURVM290VzFOenpzNUlKYTZRSHFKTllSUU5mMTBGTHROdDd0elJpRXR6d0RJckVkMFUzQXZYUHBxL1RueGhuT1V0VDRqSXVOclZ4dXRZS1NPSEdPK01DSURVR2l6NFdvS3hyVGR0TmtBQW4vZEFWNVk3UUl3L0ZJWm1yQXBWTUJXbXRZSzQ1VERKTXViclpWSlVKSlJ2eXJ1M3FtY2Y0ZXZGd2NMZEJSbjdJUTZIK2MvM0tDa0J0WXJSWnV0RVM0V3ZXLytBZ3RRem42ajRxMWVDUHhoVG8rOFV3cTR4RzZOT3M3WEtuakV0cW9TeHlEQ1F3OWJrSndBSVdMdXdmd05BZEUyVFZyZVdyQVA1ZVhiY2RoMGFKQ1hZcVlCV3JBRGxMUk96UGVXREIyTElrbm9GUndTQ1VSWWlBeGJNb2JDMnpjazJtdURlQVBiVkZlZGRmYUxpZlRRWFVSR3d0RjV1djUxNjJZclZRVHlhUTcrWEJhc1VNSHpYWmpQdDVIeDE3eFpKRGQyQVVBd3krRStKTmFHVm1KTjA0NDFLby9Eb01vZlduNGQ1REI1SGxIZmFuQ1h1Yzk0M0RGcXZBODI0M2JJdVdybUZiMWRZNHZqU3JEWVF5dFJyUUFVSUJZVW5uYVQydVJsd1V2eVU4V2w2V0F1aUNlclRqcmY2ZnpPcVJtcXRwcGxYbjNsQzIzZUVYeDZJek54RXZMa2VlYXJkV0pvdTBicEIvWmRYdFo3TTRJUnFVTHVaYnowa1BiMGkyaHZDTmowYUUzQVZGdjB4ZC82aHp6Z1NnbGxBRmtnN2tvNnFGZTlmdFhhVFBYY3Z1ZENOelBpcDZ5cVBNZTY3bnJYYnAzVG50WS9md1REZit6YlBvc1JoVkhweUwxeXJvclBtTnhXZjVMRjRFTkU1RzdIYzhxMnp6Sml1ZHRwMXR2TEQ2MkducnJGaS9YbEljZnhSNi9BWWc5cTJSb2ZtK2gzc3NJQUpUek9leStUWlZWRDRmdDNEdWozbDNOTUxOY1V0d0ZzdUZSMFhoZXJvL3BYUmdzU0ZYR0ZqOHBxSkt2Qjg3SGlHQQ=="
+# هنا نضع "الكنز" (البيانات التي استخرجناها)
+DEVICE_IDENTITY = {
+    "user_id": "55a118bf-16cd-4527-9ea7-9f90fdab8faf",
+    "access_token": "gEgIIARrGASHYUNaM8ScYAmymOmpHjoCXlPjPVLOO9p0aRI-wVSJSE3n72FT24W5ngP4eFA3uLaOVuHV",
+    "att_token": "Ci1iNFCsaIvuN4FmwoMSXqFN1o531mchZS20Zbt9Sv2TDy8ACaUEsYDd88NjSwoVAQAAAA==",
+    "signature": "JSiSYlxuy6dglS1wIydQBJjL0un5nr4AuOWhvV3W+N8="
+}
 
 @app.route('/proxy_login', methods=['POST'])
 def proxy_login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
+    # 1. استلام الطلب من النسخة المعدلة
+    raw_data = request.data
     
-    print(f"[*] Login attempt for: {username}")
-    
-    # فك تشفير البيانات
-    proto_bytes = base64.b64decode(RAW_DATA)
-    decoded, typedef = blackboxprotobuf.decode_message(proto_bytes)
-    
-    # تعديل اليوزر والباس (باستخدام بياناتك)
-    decoded['1'] = username.encode()
-    decoded['4'] = password.encode()
-    typedef['4']['type'] = 'bytes'
-    
-    # إعادة التشفير
-    re_encoded_bytes = blackboxprotobuf.encode_message(decoded, typedef)
-    
-    # تجهيز الطلب (gRPC Frame)
-    grpc_body = struct.pack('>BI', 0, len(re_encoded_bytes)) + re_encoded_bytes
-    
-    # إرسال لسناب شات
+    # 2. تجهيز الـ Headers المطابقة للنسخة الأصلية
     headers = {
         "Content-Type": "application/grpc+proto",
-        "User-Agent": "Snapchat/12.85.0.44 (iPhone9,3; iOS 15.7.5; gzip)",
-        "te": "trailers",
+        "Authorization": f"Bearer {DEVICE_IDENTITY['access_token']}",
+        "X-Snapchat-Att": DEVICE_IDENTITY['att_token'],
+        "User-Agent": "Snapchat/12.80.0.44 (iPhone9,3; iOS 15.7.5; gzip)"
     }
     
-    try:
-        r = requests.post(
-            "https://us-east1-aws.api.snapchat.com/snapchat.janus.api.LoginService/LoginWithPassword",
-            headers=headers,
-            data=grpc_body,
-            timeout=10
-        )
-        
-        if r.status_code == 200:
-            print(f"[+] Login success for: {username}")
-            return jsonify({"success": True, "status": r.status_code})
-        else:
-            print(f"[-] Login failed for: {username} - Status: {r.status_code}")
-            return jsonify({"success": False, "status": r.status_code, "error": "Invalid credentials"})
-            
-    except Exception as e:
-        print(f"[!] Error: {e}")
-        return jsonify({"success": False, "error": str(e)})
+    # 3. إعادة توجيه الطلب لسيرفر سناب شات الأصلي
+    snap_url = "https://us-east1-aws.api.snapchat.com/snapchat.janus.api.LoginService/LoginWithPassword"
+    response = requests.post(snap_url, data=raw_data, headers=headers)
+    
+    # 4. إرجاع النتيجة للنسخة المعدلة
+    return response.content, response.status_code, {'Content-Type': 'application/grpc+proto'}
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
