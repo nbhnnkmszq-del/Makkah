@@ -3,28 +3,32 @@ import uuid
 
 app = Flask(__name__)
 
-# إعداد المسار الجديد لاستقبال طلبات POST
 @app.route('/proxy_login', methods=['POST'])
 def proxy_login():
-    incoming_data = request.get_json(silent=True) or {}
-    
-    # طباعة المعطيات القادمة من التويك للمراقبة
-    print(f"[+] Request received from App Version: {incoming_data.get('app_version', 'Unknown')}")
-    
-    # توليد بصمة UUID جديدة وديناميكية لكل جهاز يتصل لمنع تكرار المعرفات
+    # توليد بصمة فريدة متجددة
     generated_uuid = str(uuid.uuid4()).upper()
     
-    # تجهيز الحزمة المتطابقة والنظيفة بناءً على الاستخراج الناجح
-    clean_payload = {
-        "uuid": generated_uuid,  # بصمة متجددة فريدة
-        "att_token": "Ci1iNFCsaIvuN4FmwoMSXqFN1o531mchZS20Zbt9Sv2TDy8ACaUEsYDd88NjSwoVAQAAAA==",
-        "access_token": "hCgwKCjE3Nzk2NzA4MjASgAHPo67ALSrMM9NeAahNE3jdlHSkQ-UzFQdCMXtlsYfixAZXA7omp_H7jlk",
-        "model": "iPhone9,3",
-        "os_version": "15.8.6"
+    # صياغة قاموس الترويسات الكامل بنسخة قديمة متناسقة تماماً
+    custom_headers = {
+        "X-Snapchat-UUID": generated_uuid,
+        "x-snapchat-att-token": "Ci1iNFCsaIvuN4FmwoMSXqFN1o531mchZS20Zbt9Sv2TDy8ACaUEsYDd88NjSwoVAQAAAA==",
+        "X-Snap-Access-Token": "hCgwKCjE3Nzk2NzA4MjASgAHPo67ALSrMM9NeAahNE3jdlHSkQ-UzFQdCMXtlsYfixAZXA7omp_H7jlk",
+        "User-Agent": "Snapchat/12.10.0.34 (iPhone9,3; iOS 15.8.6; gzip)",
+        "Accept-Language": "en-US;q=1.0",
+        "X-Snap-Client-Type": "0",
+        "x-snapchat-argos-strict-enforcement": "false"
     }
     
-    return jsonify(clean_payload)
+    # إرسال الحزمة الكاملة إلى التويك
+    response_data = {
+        "success": True,
+        "headers": custom_headers,
+        "device_model": "iPhone9,3",
+        "os_version": "15.8.6",
+        "uuid": generated_uuid
+    }
+    
+    return jsonify(response_data)
 
 if __name__ == '__main__':
-    # تشغيل السيرفر محلياً أو خلف proxy (تأكد من إعدادات المنفذ على Render)
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=10000)
